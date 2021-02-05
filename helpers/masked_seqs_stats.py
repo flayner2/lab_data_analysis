@@ -9,7 +9,7 @@ def find_x_regions_and_calculate_stats(
     x_group_counter = 0
 
     pattern = re.compile(r"X+")
-    search_res = pattern.finditer(sequence.seq)
+    search_res = pattern.finditer(str(sequence.seq))
 
     seq_features = {
         "seq_id": sequence.id,
