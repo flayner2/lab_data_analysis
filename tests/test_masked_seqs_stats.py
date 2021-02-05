@@ -74,3 +74,12 @@ def test_distance_to_5prime() -> None:
 
 def test_normalseq_noxgroups() -> None:
     assert len(no_xgroups) == 0
+
+
+def test_get_seq_class() -> None:
+    seq_class = masked_seqs_stats.get_seq_class(features_list)
+    assert seq_class == 5
+
+
+def test_seq_class_attribution() -> None:
+    assert features["seq_class"] == 5
