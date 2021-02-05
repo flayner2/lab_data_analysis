@@ -1,33 +1,34 @@
 from Bio.SeqIO import SeqRecord
 from typing import Union
+import re
 
 
 def find_x_regions_and_calculate_stats(
-    sequence: SeqRecord,
+    sequence: SeqRecord, taxon: str
 ) -> Union[dict[str, Union[str, int]], None]:
-    pass
+    seq_features_list = []
+    x_group_counter = 0
 
+    pattern = re.compile(r"X+")
+    search_res = pattern.finditer(sequence.seq)
 
-def get_dist_to_3prime(sequence: SeqRecord) -> Union[int, None]:
-    first_x_position = sequence.seq.find("X")
+    seq_features = {
+        "seq_id": sequence.id,
+        "taxon": taxon,
+        "seq_length": len(sequence.seq),
+    }
 
-    if first_x_position != -1:
-        return first_x_position
-    else:
-        return None
+    for match in search_res:
+        start, end = match.span()
+        xgroup_len = len(match.group())
 
+        seq_features["xgroup_id"] = x_group_counter
+        seq_features["xgroup_len"] = xgroup_len
+        seq_features["dist_from_3"] = start
+        seq_features["dist_from_5"] = xgroup_len - end
 
-def get_dist_to_5prime(sequence: SeqRecord) -> Union[int, None]:
-    last_x_position = sequence.seq.rfind("X")
-
-    if last_x_position != -1:
-        return len(sequence.seq) - last_x_position - 1
-    else:
-        return None
-
-
-def get_xregion_len():
-    pass
+        seq_features_list.append(seq_features)
+        x_group_counter += 1
 
 
 def get_seq_class():
