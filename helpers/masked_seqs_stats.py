@@ -3,7 +3,9 @@ from typing import Union
 import re
 
 
-def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list:
+def find_x_regions_and_calculate_stats(
+    sequence: SeqRecord, taxon: str
+) -> list:
     seq_features_list = []
     x_group_counter = 0
 
