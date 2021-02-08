@@ -23,8 +23,8 @@ def find_x_regions_and_calculate_stats(
 
         seq_features["seq_xgroup_count"] = x_group_counter
         seq_features["xgroup_len"] = xgroup_len
-        seq_features["dist_from_3"] = start
-        seq_features["dist_from_5"] = seq_features["seq_len"] - end
+        seq_features["dist_from_5"] = start
+        seq_features["dist_from_3"] = seq_features["seq_len"] - end
 
         seq_features_list.append(seq_features)
         x_group_counter += 1
