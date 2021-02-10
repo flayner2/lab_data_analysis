@@ -2,9 +2,19 @@ from Bio.SeqIO import SeqRecord
 import re
 
 
-def find_x_regions_and_calculate_stats(
-    sequence: SeqRecord, taxon: str
-) -> list:
+def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list[dict]:
+    """Takes a nucleotide sequence with masked regions represented by Xs and calculates
+    the number o X regions, the length of each X region, the distances of each X region
+    to the 3' and 5' ends of the sequence, the length of the sequence and the sequence
+    class based on X region features
+
+    Args:
+        sequence (SeqRecord): a SeqRecord object representing a nucleotide sequence
+        taxon (str): the name of the taxon the sequence belongs to
+
+    Returns:
+        list[dict]: a list of dictionaries for each X group in the sequence
+    """
     seq_features_list = []
     x_group_counter = 0
 
@@ -39,6 +49,15 @@ def find_x_regions_and_calculate_stats(
 
 
 def get_seq_class(x_groups_list: list[dict]) -> int:
+    """Infers the sequence class based on its X groups characteristics
+
+    Args:
+        x_groups_list (list[dict]): a list of dictionaries containing information about
+                                    the X groups of a sequence
+
+    Returns:
+        int: the sequence group code
+    """
     num_of_xgroups = len(x_groups_list)
 
     if num_of_xgroups == 2:
