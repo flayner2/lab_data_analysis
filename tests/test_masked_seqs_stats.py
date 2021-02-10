@@ -42,8 +42,8 @@ def test_seq_id() -> None:
     assert seq.id == features["seq_id"]
 
 
-def test_xgroup_id() -> None:
-    assert features["xgroup_id"] == 0
+def test_xgroup_count() -> None:
+    assert features["seq_xgroup_count"] == 1
 
 
 def test_xgroup_len() -> None:
@@ -51,15 +51,15 @@ def test_xgroup_len() -> None:
     assert len(substring) == features["xgroup_len"]
 
 
-def test_distance_to_3prime() -> None:
-    first = seq.seq.find("X")
-    assert first == features["dist_from_3"]
-
-
 def test_distance_to_5prime() -> None:
+    first = seq.seq.find("X")
+    assert first == features["dist_from_5"]
+
+
+def test_distance_to_3prime() -> None:
     last = seq.seq.rfind("X")
     dist = len(seq.seq) - last - 1
-    assert dist == features["dist_from_5"]
+    assert dist == features["dist_from_3"]
 
 
 def test_normalseq_noxgroups() -> None:
@@ -68,8 +68,8 @@ def test_normalseq_noxgroups() -> None:
 
 def test_get_seq_class() -> None:
     seq_class = masked_seqs_stats.get_seq_class(features_list)
-    assert seq_class == 5
+    assert seq_class == 3
 
 
 def test_seq_class_attribution() -> None:
-    assert features["seq_class"] == 5
+    assert features["seq_class"] == 3
