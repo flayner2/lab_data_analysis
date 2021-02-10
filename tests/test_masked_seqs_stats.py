@@ -1,11 +1,5 @@
-import sys
 from Bio.SeqIO import SeqRecord
-
-# Configuring local imports
-sys.path.insert(1, "/home/maycon/Documents/LAB/lab_data_analysis/helpers")
-
-import masked_seqs_stats
-
+from helpers import masked_seqs_stats
 
 seq = SeqRecord(
     seq=(
@@ -18,9 +12,7 @@ seq = SeqRecord(
     name="DT319107.1",
 )
 taxon = "Polistes_canadensis"
-features_list = masked_seqs_stats.find_x_regions_and_calculate_stats(
-    seq, taxon
-)
+features_list = masked_seqs_stats.find_x_regions_and_calculate_stats(seq, taxon)
 features = features_list[0]
 
 normal_seq = SeqRecord(
@@ -35,9 +27,7 @@ normal_seq = SeqRecord(
     id="DT319104.1",
     name="DT319104.1",
 )
-no_xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(
-    normal_seq, taxon
-)
+no_xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(normal_seq, taxon)
 
 
 def test_num_of_xgroups() -> None:
