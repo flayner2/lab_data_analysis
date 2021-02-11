@@ -1,5 +1,11 @@
 from Bio.Seq import Seq
 from helpers import filter_seqs
+import pytest
+
+
+def test_null_seq():
+    with pytest.raises(AssertionError):
+        filter_seqs.process_seq_by_class(None, None)
 
 
 def test_seq_not_changed():
@@ -56,7 +62,16 @@ def test_class3_trimming():
             "TCCTTCCCTTTAAGGGAGTCGCGGATGTTATACAAATGAAAAGAAAAAG"
         )
     )
-    expected = Seq()
+    expected = Seq(
+        (
+            "ACCTCCTATATATATATGTATATATATATATATATATCAATGTGTAATACCGCTAGTTTTCTCTCGATTCGTT"
+            "CGAAAATTGTGGCTCTTTCGGGCGAAACCGGCTGGGTCTGTGTGTACTCTCATCCTGTTTCGTGAACCGAAAG"
+            "CTCCCTTTCTCCGAAGAAGAAGAATACATTTTTTTTTCGTGCGCGTAACACGCAACGGGCATTAAGTTACAAA"
+            "CGAAACGAGCTTTACCGCGTTCCTTCCCTTTAAGGGAGTCGCGGATGTTATACAAATGAAAAGAAAAAG"
+        )
+    )
+
+    assert filter_seqs.process_seq_by_class(class_3, 3) == expected
 
 
 def test_class6_trimming():
