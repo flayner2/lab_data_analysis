@@ -2,7 +2,8 @@ from Bio.Seq import Seq
 
 
 def process_seq_by_class(seq: Seq, seq_class: int) -> Seq:
-    pass
+    if seq_class not in [1, 3, 6, 7]:
+        return seq
 
 
 def trim_x_only_keep_in_between(seq: Seq) -> Seq:

@@ -63,3 +63,7 @@ class_7 = Seq(
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXTTT"
     )
 )
+
+
+def test_seq_not_changed():
+    assert filter_seqs.process_seq_by_class(seq_without_x, None)
