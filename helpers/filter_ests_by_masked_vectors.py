@@ -1,8 +1,8 @@
 import os
 import pandas as pd
-from helpers import filter_seqs
-from helpers import masked_seqs_stats
 from Bio import SeqIO
+from filter_seqs import process_seq_by_class
+from masked_seqs_stats import find_x_regions_and_calculate_stats
 
 path_to_seqs = "/home/maycon/Documents/LAB/eusociality/local_data/crossmatch_filtered"
 
@@ -26,9 +26,7 @@ for seq_file in os.listdir(path_to_seqs):
 
         for seq in SeqIO.parse(file_path, "fasta"):
             if "X" in seq.seq:
-                current_seqlist = masked_seqs_stats.find_x_regions_and_calculate_stats(
-                    seq, taxon_name
-                )
+                current_seqlist = find_x_regions_and_calculate_stats(seq, taxon_name)
 
                 if len(current_seqlist) > 0:
                     for seq_dict in current_seqlist:
@@ -71,7 +69,7 @@ for x_file in os.listdir(path_to_seqs):
                 with open(out_path, "a") as out_file:
                     clean_seqs = list(SeqIO.parse(clean_input_file, "fasta"))
 
-                    for seq in SeqIO.parse(input_file, "fasta"):
+                    for seq in SeqIO.parse(x_input_file, "fasta"):
                         selector = xgroups_data["seq_id"] == seq.id
                         selected = xgroups_data[selector].reset_index()
 
@@ -87,9 +85,7 @@ for x_file in os.listdir(path_to_seqs):
                             if seq_class == 4:
                                 continue
                             elif seq_class in classes_to_filter:
-                                seq.seq = filter_seqs.process_seq_by_class(
-                                    seq.seq, seq_class
-                                )
+                                seq.seq = process_seq_by_class(seq.seq, seq_class)
                                 out_file.write(seq.format("fasta"))
                             else:
                                 for clean_seq in clean_seqs:
