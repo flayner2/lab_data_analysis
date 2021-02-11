@@ -61,7 +61,10 @@ for x_file in os.listdir(path_to_seqs):
 
                 org_name = "_".join(x_file.split(".")[0].split("_")[:2])
                 out_name = f"{org_name}_ests_len_blast_vector_filtered.fasta"
-                out_dir = "/home/maycon/Documents/LAB/eusociality/local_data/len_blast_vec_filtered"
+                out_dir = (
+                    "/home/maycon/Documents/LAB/eusociality/local_data/"
+                    "len_blast_vec_filtered"
+                )
                 out_path = os.path.join(out_dir, out_name)
 
                 print(org_name)
