@@ -87,6 +87,14 @@ def test_class6_trimming():
             "XXXXXXXXXXXXXXXXXXXX"
         )
     )
+    expected = Seq(
+        (
+            "GGGTTAGTTCAACGGAATCCCGGAAAGTAGCGAGTGTGAGACACGACGGTACCGCTCTATAAAATCATAAAGA"
+            "GCG"
+        )
+    )
+
+    assert filter_seqs.process_seq_by_class(class_6, 6) == expected
 
 
 def test_class7_trimming():
