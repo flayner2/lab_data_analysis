@@ -10,6 +10,8 @@ def process_seq_by_class(seq: Seq, seq_class: int) -> Seq:
 
     if seq_class == 1:
         return trim_x_only_keep_in_between(seq)
+    elif seq_class == 3:
+        return trim_x_and_5prime(seq)
 
 
 def trim_x_only_keep_in_between(seq: Seq) -> Seq:
@@ -30,7 +32,9 @@ def trim_x_only(seq: Seq) -> Seq:
 
 
 def trim_x_and_5prime(seq: Seq) -> Seq:
-    pass
+    last_x = str(seq).rfind("X")
+
+    return seq[last_x + 1 :]
 
 
 def trim_x_and_3prime(seq: Seq) -> Seq:
