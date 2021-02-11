@@ -66,4 +66,16 @@ class_7 = Seq(
 
 
 def test_seq_not_changed():
-    assert filter_seqs.process_seq_by_class(seq_without_x, None)
+    assert filter_seqs.process_seq_by_class(seq_without_x, None) == seq_without_x
+
+
+def test_class1_trimming():
+    expected = Seq(
+        (
+            "ACTGGAATCGGAATGCGCCGCACCAGGAGAAAAACCACGGTTCCTTGGTGTTCGCGAGCAGCGAGTAACGCAT"
+            "ATTTTAATCTTTTTGATGATCGGTTGTTCGGTCCTACTCACACCAATGTTGAGACACATACCTATGCCGGTAT"
+            "TATTCGGCGTTTTTCTTTATATGGGAGTCGCTTCGTTGAAAGGACTTCAATTTTTCGACAGAATTTTAATTAT"
+            "GTTGATGCCGGTTAAATACCAACCCGATTATATGTTTCTTCGTCAGGTACCTCGGCCGCGACCACGCT"
+        )
+    )
+    assert filter_seqs.process_seq_by_class(class_1, 1) == expected

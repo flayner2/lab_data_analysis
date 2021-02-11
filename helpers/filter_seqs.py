@@ -3,6 +3,8 @@ from Bio.Seq import Seq
 
 
 def process_seq_by_class(seq: Seq, seq_class: int) -> Seq:
+    assert type(seq) == Seq, "Argument {seq} must be of type Seq"
+
     if seq_class not in [1, 3, 6, 7]:
         return seq
 
@@ -12,7 +14,7 @@ def process_seq_by_class(seq: Seq, seq_class: int) -> Seq:
 
 def trim_x_only_keep_in_between(seq: Seq) -> Seq:
     pattern = re.compile(r"X+")
-    search_res = pattern.finditer(str(seq.seq))
+    search_res = pattern.finditer(str(seq))
 
     x1 = next(search_res)
     x2 = next(search_res)
@@ -20,7 +22,7 @@ def trim_x_only_keep_in_between(seq: Seq) -> Seq:
     _, x1_end = x1.span()
     x2_start, _ = x2.span()
 
-    return seq[x1_end + 1 : x2_start]
+    return seq[x1_end:x2_start]
 
 
 def trim_x_only(seq: Seq) -> Seq:
