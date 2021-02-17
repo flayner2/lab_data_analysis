@@ -93,6 +93,3 @@ def test_parsing_alignments_file():
 
     # Check if the positions conform to the expected
     assert record.al_positions[0] == (7, 158)
-
-
-# TODO: write a test to check files ordered by raw alignment scores (e.g., Polistes)
