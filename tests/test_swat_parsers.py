@@ -21,3 +21,37 @@ def test_alignment_record_construction():
     # Testing if we are able to set the alignment positions
     assert record.al_start == 1
     assert record.al_end == 2
+
+
+def test_parsing_allscores_file():
+    """Test the parsing and object creation from a mock `swat` .allscores file"""
+
+    # Parse the file and get the list of AlignmentRecord objects
+    alignments = swat_parser.SwatParser.parse_swat_results(
+        allscores_file="/home/maycon/Documents/LAB/lab_data_analysis/tests/swat_test.allscores",
+        subject="polyA",
+    )
+
+    # Checking if the expected number of records was produced
+    assert len(alignments) == 2
+
+    # Getting both records out of the list
+    record1 = alignments[0]
+    record2 = alignments[1]
+
+    # Checking if the records are instances of the AlignmentRecord class
+    assert isinstance(record1, swat_parser.AlignmentRecord)
+    assert isinstance(record2, swat_parser.AlignmentRecord)
+
+    # Testing each record's properties
+    assert record1.id == "HX317466.1"
+    assert record2.id == "HX287430.1"
+
+    assert record1.raw_score == 148
+    assert record2.raw_score == 132
+
+    assert record1.z_score == 30.81
+    assert record2.z_score == 27.24
+
+    assert record1.subject == "polyA"
+    assert record2.subject == "polyA"
