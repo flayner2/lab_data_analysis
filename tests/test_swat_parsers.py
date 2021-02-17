@@ -21,11 +21,10 @@ def test_alignment_record_construction():
     assert record.subject == "polyT"
 
     # Setting the alignment starting and ending positions
-    record.set_alignment_positions(start=1, end=2)
+    record.set_alignment_positions((1, 2))
 
     # Testing if we are able to set the alignment positions
-    assert record.al_start == 1
-    assert record.al_end == 2
+    assert record.al_positions[0] == (1, 2)
 
 
 def test_parsing_allscores_file():
@@ -66,4 +65,27 @@ def test_parsing_allscores_file():
 
 
 def test_parsing_alignments_file():
-    pass
+    """Test the parsing and object updating from a mock `swat` alignments file"""
+
+    # Initializing a test object with example values from a real alignment
+    record = swat_parser.AlignmentRecord(
+        id="HX342487.1", raw_score=134, z_score=17.58, subject="polyT"
+    )
+
+    # Path to the input file
+    file_path = f"{TEST_FOLDER}/swat_test.alignments"
+
+    # Just checking if everything is fine with the object
+    assert record.id == "HX342487.1"
+    assert record.raw_score == 134
+    assert record.z_score == 17.58
+    assert record.subject == "polyT"
+
+    # Loading the alignment positions
+    positions_dict = swat_parser.SwatParser.parse_swat_alignment_output(file_path)
+
+    # Loop through the values that match the record's ID
+    for position in positions_dict[record.id]:
+        record.set_alignment_positions(position)
+
+    assert record.al_positions[0] == (7, 158)
