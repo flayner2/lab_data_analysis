@@ -40,8 +40,9 @@ class AlignmentRecord(Record):
         self.raw_score = raw_score
         self.z_score = z_score
         self.subject = subject
+        self.al_positions = []
 
-    def set_alignment_positions(self, start: int, end: int) -> None:
+    def set_alignment_positions(self, positions: tuple[int]) -> None:
         """Retrieves the indexes corresponding to the starting and ending positions
         where the subject aligned with the sequence.
 
@@ -49,8 +50,7 @@ class AlignmentRecord(Record):
             start (int): the starting position of the alignment.
             end (int): the ending position of the alignment.
         """
-        self.al_start = start
-        self.al_end = end
+        self.al_positions.append(positions)
 
 
 class SwatParser(Parser):
