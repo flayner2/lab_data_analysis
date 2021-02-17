@@ -143,6 +143,10 @@ class SwatParser(Parser):
                         `AAAAAAAAAAAAAAAAAAAAAAAA`
             `Query     101 AAAAAAAAAAAAAAAAAAAAAAAA 124`
 
+            For now though, files that are ordered by raw alignment score have some
+            other particularities about how blocks of alignments are separated from
+            each other, so this feature is not fully functional on its own yet.
+
         Returns:
             defaultdict[str, list[tuple[int, int]]]: a dictionary where the keys are
             sequence IDs and the values is a list of tuples containing the (start, end)
