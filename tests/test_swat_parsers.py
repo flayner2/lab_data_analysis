@@ -1,3 +1,4 @@
+import os
 from helpers import swat_parser
 
 
@@ -26,9 +27,13 @@ def test_alignment_record_construction():
 def test_parsing_allscores_file():
     """Test the parsing and object creation from a mock `swat` .allscores file"""
 
+    # Path to the input file
+    test_folder = os.path.dirname(__file__)
+    file_path = f"{test_folder}/swat_test.allscores"
+
     # Parse the file and get the list of AlignmentRecord objects
     alignments = swat_parser.SwatParser.parse_swat_results(
-        allscores_file="/home/maycon/Documents/LAB/lab_data_analysis/tests/swat_test.allscores",
+        allscores_file=file_path,
         subject="polyA",
     )
 
