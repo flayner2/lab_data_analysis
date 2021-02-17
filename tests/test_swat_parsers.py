@@ -63,3 +63,7 @@ def test_parsing_allscores_file():
 
     assert record1.subject == "polyA"
     assert record2.subject == "polyA"
+
+
+def test_parsing_alignments_file():
+    pass
