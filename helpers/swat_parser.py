@@ -5,6 +5,7 @@ file can be produced by catching `swat`'s printed results to the STDOUT to a fil
 A score value may be provided if you also want to use this to find the starting and
 ending positions of an alignment.
 """
+import sys
 
 
 class Record:
@@ -97,7 +98,10 @@ class SwatParser(Parser):
         return result_records
 
     @staticmethod
-    def parse_swat_alignment_output(alignment_file: str) -> dict[str, tuple[int, int]]:
+    def parse_swat_alignment_output(
+        alignment_file: str,
+        separator_string: str = "Matches ranked by decreasing z-scores:",
+    ) -> dict[str, tuple[int, int]]:
         """Parses a file containing the `swat` alignment output. This output is by
         default redirected to STDOUT, so you'll have to redirect the STDOUT to a file
         when running `swat` to generate such files.
@@ -105,10 +109,62 @@ class SwatParser(Parser):
         Args:
             alignment_file (str): the path to a file containing a `swat` alignment
             output.
+            separator_string (str): the string used to perform the file splitting.
+            By default, it's the expected string for a swat output ordered by z-scores.
+            If there aren't enough positives in the output, the ordering will be by
+            raw scores, so a different string will be needed for the correct splitting.
+            Check your swat outputs for that. It will look like this:
+
+            `Matches ranked by decreasing z-scores:`
+
+            or
+
+            `Matches ranked by decreasing raw alignment scores:`
+
+            This is where the splitting must be performed, so look for that in your
+            swat output. The clue is that it will always be followed by two blank lines
+            and an alignment like:
+
+            `Matches ranked by decreasing z-scores:`
+
+
+            `EE143615.1 SiJWD03BCY2 Lausanne fire ant library Solenopsis invicta cDNA,
+            mRNA sequence  Length: 420`
+            `Score: 124  z: 54.40  E: 3.54e-27  new_E: 2.16e-43`
+
+            `Subject   257 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 306`
+                          `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+            `Query       1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 50`
+
+            `Subject   307 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 356`
+                        `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+            `Query      51 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 100`
+
+            `Subject   357 AAAAAAAAAAAAAAAAAAAAAAAA 380`
+                        `AAAAAAAAAAAAAAAAAAAAAAAA`
+            `Query     101 AAAAAAAAAAAAAAAAAAAAAAAA 124`
 
         Returns:
             dict[str, tuple[int, int]]: a dictionary where the keys are sequence IDs
             and the values are tuples containing the (start, end) positions of each
             alignment.
         """
-        pass
+        result_positions = {}
+
+        with open(alignment_file, "r") as alignments_file:
+            entire_file = alignment_file.read()
+
+            # This sentence is where the alignments start in the swat output
+            _, sep, all_alignments = entire_file.partition(separator_string)
+
+            # So we do a small check to see if this sentence is in the file
+            if sep == "":
+                sys.exit(
+                    (
+                        "Default separator wasn't found in input file. Check if your"
+                        "file contains the swat alignment results."
+                    )
+                )
+
+            # If everything is fine, we proceed
+            all_alignments = all_alignments.strip()
