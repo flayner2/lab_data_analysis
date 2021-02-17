@@ -43,12 +43,12 @@ class AlignmentRecord(Record):
         self.al_positions = []
 
     def set_alignment_positions(self, positions: tuple[int]) -> None:
-        """Retrieves the indexes corresponding to the starting and ending positions
-        where the subject aligned with the sequence.
+        """Sets the indexes corresponding to the starting and ending positions of an
+        alignment, where the subject is aligned with the sequence.
 
         Args:
-            start (int): the starting position of the alignment.
-            end (int): the ending position of the alignment.
+            positions (tuple[int]): a 2-tuple containing the (start, end) alignment
+            positions for a particular alignment for a given sequence.
         """
         self.al_positions.append(positions)
 
