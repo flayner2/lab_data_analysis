@@ -77,10 +77,14 @@ class SwatParser(Parser):
         result_records = []
 
         with open(allscores_file, "r") as scores_file:
+            # Each alignment record is a separate line in the swat .allscores file
             raw_records = [line.strip() for line in scores_file.readlines()]
 
             for record in raw_records:
+                # For each record, each column is separated by multiple spaces.
                 record = record.split()
+                # We only care about columns 0 (id), 2 (raw score) and 3 (z-score).
+                # Everything is read as strings, so we need to convert columns 2 and 3.
                 result_records.append(
                     AlignmentRecord(
                         id=record[0],
