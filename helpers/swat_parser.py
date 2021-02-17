@@ -54,7 +54,28 @@ class AlignmentRecord(Record):
 
 
 class SwatParser(Parser):
+    """A Parser for swat alignment output files, which can also calculate metrics such
+    as the start and end position of a particular sequence's alignment
+    """
+
+    @staticmethod
     def parse_swat_results(
-        alignment_file: str, allscores_file: str
+        allscores_file: str, subject: str = "None"
     ) -> list[AlignmentRecord]:
-        pass
+        result_records = []
+
+        with open(allscores_file, "r") as scores_file:
+            raw_records = [line.strip() for line in scores_file.readlines()]
+
+            for record in raw_records:
+                record = record.split("\t")
+                result_records.append(
+                    AlignmentRecord(
+                        id=record[0],
+                        raw_score=record[2],
+                        z_score=record[3],
+                        subject=subject,
+                    )
+                )
+
+        return result_records
