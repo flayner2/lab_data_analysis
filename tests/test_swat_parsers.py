@@ -32,7 +32,7 @@ def test_parsing_allscores_file():
     file_path = f"{test_folder}/swat_test.allscores"
 
     # Parse the file and get the list of AlignmentRecord objects
-    alignments = swat_parser.SwatParser.parse_swat_results(
+    alignments = swat_parser.SwatParser.parse_swat_allscores(
         allscores_file=file_path,
         subject="polyA",
     )
