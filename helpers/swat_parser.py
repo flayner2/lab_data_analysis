@@ -4,6 +4,7 @@ It parses both a .alignment and a .allscores file. A .alignment file can be prod
 redirecting `swat`'s STDOUT to a file.
 """
 import sys
+from collections import defaultdict
 
 
 class Record:
@@ -99,7 +100,7 @@ class SwatParser(Parser):
     def parse_swat_alignment_output(
         alignment_file: str,
         separator_string: str = "Matches ranked by decreasing z-scores:",
-    ) -> dict[str, tuple[int, int]]:
+    ) -> defaultdict[str, list[tuple[int, int]]]:
         """Parses a file containing the `swat` alignment output. This output is by
         default redirected to STDOUT, so you'll have to redirect the STDOUT to a file
         when running `swat` to generate such files.
@@ -143,14 +144,15 @@ class SwatParser(Parser):
             `Query     101 AAAAAAAAAAAAAAAAAAAAAAAA 124`
 
         Returns:
-            dict[str, tuple[int, int]]: a dictionary where the keys are sequence IDs
-            and the values are tuples containing the (start, end) positions of each
-            alignment.
+            defaultdict[str, list[tuple[int, int]]]: a dictionary where the keys are
+            sequence IDs and the values is a list of tuples containing the (start, end)
+            positions of each alignment since there may be > 1 alignment for a given
+            sequence.
         """
-        result_positions = {}
+        result_positions = defaultdict(list)
 
         with open(alignment_file, "r") as alignments_file:
-            entire_file = alignment_file.read()
+            entire_file = alignments_file.read()
 
             # This sentence is where the alignments start in the swat output
             _, sep, all_alignments = entire_file.partition(separator_string)
@@ -166,4 +168,42 @@ class SwatParser(Parser):
                 )
 
             # If everything is fine, we proceed
-            all_alignments = all_alignments.strip()
+            # Each alignment record is separated from the next one by two blank lines
+            all_alignments = all_alignments.strip().split("\n\n\n")
+
+            for each_alignment in all_alignments:
+                # Each alignment block of a record is separated from the next one by
+                # one blank line
+                alignment_details = each_alignment.split("\n\n")
+
+                # The first alignment block should actually be a description of the
+                # sequence, so we'll get the id from there. If we split it by spaces,
+                # then the first object will be the sequence id. We pop the first block
+                # because it makes it easier to process the next ones
+                seq_id = alignment_details.pop(0).split()[0]
+
+                # All alignment blocks have a Subject and a Query sequence. This is
+                # just a sanitization check
+                alignment_blocks = [
+                    alignment_block
+                    for alignment_block in alignment_details
+                    if ("Subject" in alignment_block and "Query" in alignment_block)
+                ]
+
+                # If we found no alignment blocks then something is wrong
+                if len(alignment_blocks) == 0:
+                    sys.exit("No alignment blocks were found")
+
+                # We only care about the first and the last alignment blocks because
+                # that's where the start and end positions are, respectively. Each
+                # sequence is separated from the next one by a line break. The Query
+                # sequence is in the first line, and that's the one we want. If we
+                # split it by spaces, the start position is the second object and the
+                # end position is the last object from the first line of the last block
+                start = alignment_blocks[0].split("\n")[0].split()[1]
+                end = alignment_blocks[-1].split("\n")[0].split()[-1]
+
+                # Now we are done with this sequence, so put it into the dict
+                result_positions[seq_id].append((start, end))
+
+        return result_positions
