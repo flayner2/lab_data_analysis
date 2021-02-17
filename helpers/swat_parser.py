@@ -84,8 +84,8 @@ class SwatParser(Parser):
                 result_records.append(
                     AlignmentRecord(
                         id=record[0],
-                        raw_score=record[2],
-                        z_score=record[3],
+                        raw_score=int(record[2]),
+                        z_score=float(record[3]),
                         subject=subject,
                     )
                 )
