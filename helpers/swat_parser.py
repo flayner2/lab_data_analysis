@@ -200,8 +200,8 @@ class SwatParser(Parser):
                 # sequence is in the first line, and that's the one we want. If we
                 # split it by spaces, the start position is the second object and the
                 # end position is the last object from the first line of the last block
-                start = alignment_blocks[0].split("\n")[0].split()[1]
-                end = alignment_blocks[-1].split("\n")[0].split()[-1]
+                start = int(alignment_blocks[0].split("\n")[0].split()[1])
+                end = int(alignment_blocks[-1].split("\n")[0].split()[-1])
 
                 # Now we are done with this sequence, so put it into the dict
                 result_positions[seq_id].append((start, end))
