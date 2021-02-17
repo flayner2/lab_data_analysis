@@ -5,3 +5,56 @@ file can be produced by catching `swat`'s printed results to the STDOUT to a fil
 A score value may be provided if you also want to use this to find the starting and
 ending positions of an alignment.
 """
+
+
+class Record:
+    """Base Class for Record type objects"""
+
+    def __init__(self) -> None:
+        raise NotImplementedError
+
+
+class Parser:
+    """Base Class for Parser type objects"""
+
+    def __init__(self) -> None:
+        raise NotImplementedError
+
+
+class AlignmentRecord(Record):
+    """A Record containing information about its alignment against another subject
+    sequence"""
+
+    def __init__(self, id: str, raw_score: int, z_score: float, subject: str) -> None:
+        """Instantiates an AlignmentRecord object with metrics describing its alignment
+        score
+
+        Args:
+            id (str): the sequence identifier for the particular sequence that was
+            aligned
+            raw_score (int): the raw alignment score for the sequence
+            z_score (float): the corrected alignment z-score for the sequence
+            subject (str): the subject which this sequence was aligned against
+        """
+        self.id = id
+        self.raw_score = raw_score
+        self.z_score = z_score
+        self.subject = subject
+
+    def set_alignment_positions(self, start: int, end: int) -> None:
+        """Retrieves the indexes corresponding to the starting and ending positions
+        where the subject aligned with the sequence
+
+        Args:
+            start (int): the starting position of the alignment
+            end (int): the ending position of the alignment
+        """
+        self.al_start = start
+        self.al_end = end
+
+
+class SwatParser(Parser):
+    def parse_swat_results(
+        alignment_file: str, allscores_file: str
+    ) -> list[AlignmentRecord]:
+        pass
