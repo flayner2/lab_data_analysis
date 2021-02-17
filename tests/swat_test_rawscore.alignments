@@ -1,0 +1,73 @@
+swat polyA.fasta crossmatch_filtered/Polistes_canadensis_ests_blast_filtered.fasta.screen -M ../local_work/matrix -z 8 -file -gap_init -5 -gap_ext -5 -end_gap -5 
+swat version 1.090518
+
+Run date:time  210217:113722
+Query file(s):  polyA.fasta   Log file: polyA.fasta.log
+Subject file(s):   crossmatch_filtered/Polistes_canadensis_ests_blast_filtered.fasta.screen
+Presumed sequence type (from score matrix): DNA
+
+Pairwise comparison algorithm:  Smith-Waterman
+
+Score matrix ../local_work/matrix
+    A   C   G   T   Y   R   N   X
+A   1  -2  -2  -2  -2  -2   0  -2
+C  -2   1  -2  -2  -2  -2   0  -2
+G  -2  -2   1  -2  -2  -2   0  -2
+T  -2  -2  -2   1  -2  -2   0  -2
+Y  -2  -2  -2  -2   1  -2   0  -2
+R  -2  -2  -2  -2  -2   1   0  -2
+N   0   0   0   0   0   0   0   0
+X  -2  -2  -2  -2  -2  -2   0   0
+
+Gap penalties: gap_init: -5, gap_ext: -5, ins_gap_ext: -5, del_gap_ext: -5, 
+z cutoff: 8   
+
+Variable sizes: int: 4, long int: 8, SEQ_AREA: 4, signed: 1
+
+
+*********************************************************************************
+
+Query:   PolyA Probe Sequence   Length: 500 residues
+
+42 entries processed. Total no. cells: 7569000
+
+  8     3     3
+  7     2     5
+  6     5    10
+
+32 entries with score 0 or length < 30 are excluded from the statistical analyses,
+  leaving 10 entries.
+Average length: 348.3, (truncated) range 156 - 472.
+(Truncated) score range: 6 - 8. 
+Too few positive scores to compute valid z-scores and E-values
+
+
+Matches ranked by decreasing raw alignment scores:
+
+DT319109.1 EST00006 Polistes canadensis adult caste mRNA Polistes canadensis cDNA clone NE(Q)3-B4 similar to fatty acid synthase/P270, mRNA sequence  Length: 391
+  Score: 8
+
+Subject   124 AAAAAAAA 131
+              AAAAAAAA
+Query       1 AAAAAAAA 8
+
+DT319115.1 EST00012 Polistes canadensis adult caste mRNA Polistes canadensis cDNA clone 2W2-A1 similar to porin, mRNA sequence  Length: 356
+  Score: 8
+
+Subject   225 AAAAAAAA 232
+              AAAAAAAA
+Query       1 AAAAAAAA 8
+
+DT319134.1 EST00031 Polistes canadensis adult caste mRNA Polistes canadensis cDNA clone 2W2-G3 similar to AMP-activated protein kinase, mRNA sequence  Length: 416
+  Score: 8
+
+Subject   329 AAAAAAAA 336
+              AAAAAAAA
+Query       1 AAAAAAAA 8
+
+DT319124.1 EST00021 Polistes canadensis adult caste mRNA Polistes canadensis cDNA clone NE(Q)4-A4 similar to Penelope transposable element, mRNA sequence  Length: 365
+  Score: 7
+
+Subject   180 AAAAAAA 186
+              AAAAAAA
+Query       1 AAAAAAA 7
