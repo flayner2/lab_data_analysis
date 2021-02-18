@@ -86,6 +86,37 @@ def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecor
             return list(SeqIO.parse(seq_file_path, "fasta"))
 
 
+def load_alignments(
+    taxon: str, path: str, subjects: list[str]
+) -> list[swat_parser.AlignmentRecord]:
+    # Find the file for each subject sequence
+    for subject in subjects:
+        # Find the alignment files for a taxon
+        for al_file in os.listdir(path):
+            # Check if the file belongs to that taxon and that subject
+            if taxon in al_file and subject in al_file:
+                # Get the path to the allscores and alignments files for
+                # each taxon, for each subject
+                if al_file.endswith(".allscores"):
+                    all_scores_file_path = os.path.join(path, al_file)
+                else:
+                    alignments_file_path = os.path.join(path, al_file)
+
+        # Generate the list of AlignmentRecord objects
+        alignments_list = swat_parser.SwatParser.parse_swat_allscores(
+            all_scores_file_path, subject
+        )
+        positions_dict = swat_parser.SwatParser.parse_swat_alignment_output(
+            alignments_file_path
+        )
+
+        for alignment in alignments_list:
+            for positions in positions_dict[alignment.id]:
+                alignment.set_alignment_positions(positions)
+
+        return alignments_list
+
+
 def main():
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -100,13 +131,18 @@ def main():
     # List our taxa
     taxa_list = ["Apis_mellifera", "Polistes_canadensis", "Solenopsis_invicta"]
 
+    # Subject sequences we align against
+    subjects = ["polyA", "polyT"]
+
     # Loop over each taxon
     for taxon in taxa_list:
         # Load the clean and masked sequences
         clean_seqs = load_seqs(taxon, clean_seqs_dir)
         masked_seqs = load_seqs(taxon, masked_seqs_dir, extension=".screen")
 
-        print(len(clean_seqs), len(masked_seqs))
+        # Load all alignments for the taxon
+        if taxon != "Polistes_canadensis":
+            alignments = load_alignments(taxon, alignments_dir, subjects)
 
 
 if __name__ == "__main__":
