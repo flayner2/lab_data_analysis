@@ -133,7 +133,7 @@ def load_alignments(
         return alignments_list
 
 
-# TODO: maybe try to optimze this function
+# NOTE: maybe try to optimze this function
 def create_estseq_list(
     taxon: str,
     clean_seqs: list[SeqRecord],
@@ -191,6 +191,11 @@ def create_estseq_list(
     return estseq_list
 
 
+# TODO: implement this
+def update_xgroup_info(taxon: str, estseq_list: list[ESTSeq]) -> list[ESTSeq]:
+    pass
+
+
 def main():
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -220,11 +225,16 @@ def main():
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Create a list of ESTSeq objects
-            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs, alignments)
+            raw_estseq_list = create_estseq_list(
+                taxon, clean_seqs, masked_seqs, alignments
+            )
         # Else if it is PolistesCanadensis, we create a list
         else:
             # Create a list of ESTSeq objects without alignment information
-            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
+            raw_estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
+
+        # TODO: implement this
+        finished_estseq_list = update_xgroup_info(taxon, raw_estseq_list)
 
 
 if __name__ == "__main__":
