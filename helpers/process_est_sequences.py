@@ -4,7 +4,7 @@ of masked vector sequences and aligned polyA and polyT sequences
 """
 # Standard lib imports
 import os
-from typing import Union
+from typing import Union, Optional
 
 # Third-party imports
 from Bio import SeqIO
@@ -133,6 +133,48 @@ def load_alignments(
         return alignments_list
 
 
+# TODO: maybe try to optimze this function
+def create_estseq_list(
+    taxon: str,
+    clean_seqs: list[SeqRecord],
+    masked_seqs: list[SeqRecord],
+    alignments: list[Optional[swat_parser.AlignmentRecord]] = [],
+) -> list[ESTSeq]:
+    # A list to hold all built ESTSeq objects
+    estseq_list = []
+
+    # Create a new ESTSeq object for each clean SeqRecord object
+    for clean_seq_record in clean_seqs:
+        new_estseq = ESTSeq(
+            seq_id=clean_seq_record.id, taxon=taxon, clean_seq=clean_seq_record.seq
+        )
+
+        for masked_seq_record in masked_seqs:
+            # Find the masked SeqRecord that corresponds to the ESTSeq's id AND has an "X" in it
+            if masked_seq_record.id == new_estseq.seq_id:
+                # If the Seq of the masked SeqRecord contains an "X" in it
+                if "X" in masked_seq_record:
+                    # Then set the new ESTSeq's masked_seq to be that
+                    new_estseq.masked_seq = masked_seq_record.seq
+
+                # We found our masked seq and there's no need to search further
+                # so we break
+                break
+
+        # Set the alignments list for the ESTSeq object
+        if alignments:
+            for alignment in alignments:
+                # Find an AlignmentRecord that corresponds to our ESTSeq's id
+                if alignment.id == new_estseq.seq_id:
+                    # Append that AlignmentRecord to the ESTSeq's alignments list
+                    new_estseq.al_list.append(alignment)
+
+        # Finally, append that ESTSeq to the final list of ESTSeqs
+        estseq_list.append(new_estseq)
+
+    return estseq_list
+
+
 def main():
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -156,9 +198,17 @@ def main():
         clean_seqs = load_seqs(taxon, clean_seqs_dir)
         masked_seqs = load_seqs(taxon, masked_seqs_dir, extension=".screen")
 
-        # Load all alignments for the taxon
-        if taxon != "Polistes_canadensis":
+        # If the taxon is not "Polistes_canadensis", for which we don't have good
+        # alignment information
+        if taxon != taxa_list[1]:
+            # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
+            # Create a list of ESTSeq objects
+            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs, alignments)
+        # Else if it is PolistesCanadensis, we create a list
+        else:
+            # Create a list of ESTSeq objects without alignment information
+            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
 
 
 if __name__ == "__main__":
