@@ -89,6 +89,20 @@ def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecor
 def load_alignments(
     taxon: str, path: str, subjects: list[str]
 ) -> list[swat_parser.AlignmentRecord]:
+    """Generates a list of AlignmentRecord objects for all possible alignments against
+    all given `subjects` for each sequence belonging to a `taxon`.
+
+    Args:
+        taxon (str): the name of the taxon to look for.
+        path (str): the path to all alignment and allscores files.
+        subjects (list[str]): all the subject sequences with which each sequence was
+        aligned against.
+
+    Returns:
+        list[swat_parser.AlignmentRecord]: a list containing an AlignmentRecord object
+        for each sequence for the `taxon`.
+    """
+
     # Find the file for each subject sequence
     for subject in subjects:
         # Find the alignment files for a taxon
@@ -106,10 +120,12 @@ def load_alignments(
         alignments_list = swat_parser.SwatParser.parse_swat_allscores(
             all_scores_file_path, subject
         )
+        # Generate a dict of alignment positions for each sequence
         positions_dict = swat_parser.SwatParser.parse_swat_alignment_output(
             alignments_file_path
         )
 
+        # Set the alignment positions for each AlignmentRecord
         for alignment in alignments_list:
             for positions in positions_dict[alignment.id]:
                 alignment.set_alignment_positions(positions)
