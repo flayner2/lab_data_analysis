@@ -140,6 +140,22 @@ def create_estseq_list(
     masked_seqs: list[SeqRecord],
     alignments: list[Optional[swat_parser.AlignmentRecord]] = [],
 ) -> list[ESTSeq]:
+    """Builds a list of ESTSeqs for each EST sequence in `clean_seqs` with informations
+    about the vector-masked version of that EST (if it exists) and its alignments (if
+    it has any).
+
+    Args:
+        taxon (str): the taxon to which the ESTs belong.
+        clean_seqs (list[SeqRecord]): a list of non-vector-masked EST sequences.
+        masked_seqs (list[SeqRecord]): a list of vector-masked EST sequences.
+        alignments (list[Optional[swat_parser.AlignmentRecord]], optional): either a
+        list of alignments of an EST sequence agains a set of subject sequences or an
+        empty list if there are no alignments. Defaults to [].
+
+    Returns:
+        list[ESTSeq]: [description]
+    """
+
     # A list to hold all built ESTSeq objects
     estseq_list = []
 
