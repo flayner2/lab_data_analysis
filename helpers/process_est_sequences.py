@@ -76,7 +76,8 @@ class ESTSeq:
                 Sequence class: 1
                 X-groups count: 2
                 Alignments count: 2
-                Alignments: [AlignmentRecord<polyA|8.1|3>, AlignmentRecord<polyT|9.3|1>]
+                Alignments: [AlignmentRecord<polyA|ABC001|8.1|3>,
+                AlignmentRecord<polyT|ABC001|9.3|1>]
         """
         return (
             f"Sequence {self.seq_id} for {self.taxon}\nSequence length: "
