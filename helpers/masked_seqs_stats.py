@@ -21,7 +21,7 @@ class XGroup:
         return f"XGroup<{self.xgroup_len}|{self.dist_from_5}|{self.dist_from_3}>"
 
 
-def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list[dict]:
+def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
     """Takes a nucleotide sequence with masked regions represented by Xs and calculates
     the number o X regions, the length of each X region, the distances of each X region
     to the 3' and 5' ends of the sequence, the length of the sequence and the sequence
@@ -34,40 +34,29 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list[
     Returns:
         list[dict]: a list of dictionaries for each X group in the sequence
     """
-    seq_features_list = []
-    x_group_counter = 1
-
     pattern = re.compile(r"X+")
     search_res = pattern.finditer(str(sequence.seq))
 
-    seq_features = {
-        "seq_id": sequence.id,
-        "taxon": taxon,
-        "seq_len": len(sequence.seq),
-    }
+    seq_class, xgroups = (0, [])
 
     for match in search_res:
         start, end = match.span()
         xgroup_len = len(match.group())
+        dist_from_3 = len(sequence.seq) - end
 
-        seq_features["seq_xgroup_count"] = x_group_counter  # TODO: move this down
-        seq_features["xgroup_len"] = xgroup_len
-        seq_features["dist_from_5"] = start
-        seq_features["dist_from_3"] = seq_features["seq_len"] - end
+        new_xgroup = XGroup(
+            xgroup_len=xgroup_len, dist_from_5=start, dist_from_3=dist_from_3
+        )
 
-        seq_features_list.append(seq_features)
-        x_group_counter += 1
+        xgroups.append(new_xgroup)
 
-    if len(seq_features_list) > 0:
-        seq_class = get_seq_class(seq_features_list)
+    if len(xgroups) > 0:
+        seq_class = get_seq_class(xgroups)
 
-        for each_dict in seq_features_list:
-            each_dict["seq_class"] = seq_class
-
-    return seq_features_list
+    return (seq_class, xgroups)
 
 
-def get_seq_class(x_groups_list: list[dict]) -> int:
+def get_seq_class(x_groups_list: list[XGroup]) -> int:
     """Infers the sequence class based on its X groups characteristics
 
     Args:
@@ -85,8 +74,8 @@ def get_seq_class(x_groups_list: list[dict]) -> int:
         return 2
     else:
         x_group = x_groups_list[0]
-        xgrop_len = x_group["xgroup_len"]
-        dist_from_5 = x_group["dist_from_5"]
+        xgrop_len = x_group.xgroup_len
+        dist_from_5 = x_group.dist_from_5
 
         if xgrop_len <= 300 and dist_from_5 < 50:
             return 3
