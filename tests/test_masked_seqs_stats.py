@@ -1,75 +1,64 @@
+import re
+
 from Bio.SeqIO import SeqRecord
 from helpers import masked_seqs_stats
 
-seq = SeqRecord(
-    seq=(
-        "AAGCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXCGA"
-        "GACGGCCGCCCGGGCAGGTACACCCAAGGATTTAATCGTCAAACCATGACGGGTCTCGAAAATCGAAA"
-        "CGGACAACATGACAAGGAAATGGGCCCGATGATGAACGAAGTCACCAGACCGAGATACATCAGGGACG"
-        "ATAAGAATGCCAAAATTATCGACACATCGGTGGAAAC"
-    ),
-    id="DT319107.1",
-    name="DT319107.1",
-)
-taxon = "Polistes_canadensis"
-features_list = masked_seqs_stats.find_x_regions_and_calculate_stats(seq, taxon)
-features = features_list[0]
 
-normal_seq = SeqRecord(
-    seq=(
-        "ACCTATAGGTTGTCGTCGACAAAGAAATGAATCAACTTCCTCTGGTGGTT"
-        "CATGGCAAATGATATCTGGAACTGGTAGTTTACGTGGTTCAACAACAGCC"
-        "CACACATCTATTACAGAGGGATCTAATTCTTCTGGCTCGACTAGCAAAGG"
-        "TTTATTTGAAAATTTTTTACATCAAGCTCATGGATCTAGTAAAGCAATAT"
-        "TGGAAGATGACGAATCCGTATCACAAGTACCTGCCCGGGCGGCCGCTCGA"
-        "AAGCCG"
-    ),
-    id="DT319104.1",
-    name="DT319104.1",
-)
-no_xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(normal_seq, taxon)
+def test_seq_without_xgroups() -> None:
+    seq = SeqRecord(
+        seq=(
+            "ACCTATAGGTTGTCGTCGACAAAGAAATGAATCAACTTCCTCTGGTGGTT"
+            "CATGGCAAATGATATCTGGAACTGGTAGTTTACGTGGTTCAACAACAGCC"
+            "CACACATCTATTACAGAGGGATCTAATTCTTCTGGCTCGACTAGCAAAGG"
+            "TTTATTTGAAAATTTTTTACATCAAGCTCATGGATCTAGTAAAGCAATAT"
+            "TGGAAGATGACGAATCCGTATCACAAGTACCTGCCCGGGCGGCCGCTCGA"
+            "AAGCCG"
+        ),
+        id="DT319104.1",
+        name="DT319104.1",
+    )
+    seq_class, seq_xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(seq)
+
+    # Check if it has no xgroups
+    assert len(seq_xgroups) == 0
+
+    # Check if the seq class is invalid (i.e., 0)
+    assert seq_class == 0
 
 
-def test_num_of_xgroups() -> None:
-    assert len(features_list) == 1
+def test_seq_with_xgroups() -> None:
 
+    seq = SeqRecord(
+        seq=(
+            "AAGCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXCGA"
+            "GACGGCCGCCCGGGCAGGTACACCCAAGGATTTAATCGTCAAACCATGACGGGTCTCGAAAATCGAAA"
+            "CGGACAACATGACAAGGAAATGGGCCCGATGATGAACGAAGTCACCAGACCGAGATACATCAGGGACG"
+            "ATAAGAATGCCAAAATTATCGACACATCGGTGGAAAC"
+        ),
+        id="DT319107.1",
+        name="DT319107.1",
+    )
+    seq_class, seq_xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(seq)
 
-def test_seq_len() -> None:
-    assert len(seq.seq) == features["seq_len"]
+    # Check the ammount of xgroups
+    assert len(seq_xgroups) == 1
 
+    # Check the length of the xgroup
+    pattern = re.compile(r"X+")
+    substring = pattern.search(str(seq.seq))
 
-def test_seq_id() -> None:
-    assert seq.id == features["seq_id"]
+    assert len(substring.group(0)) == seq_xgroups[0].xgroup_len
 
-
-def test_xgroup_count() -> None:
-    assert features["seq_xgroup_count"] == 1
-
-
-def test_xgroup_len() -> None:
-    substring = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    assert len(substring) == features["xgroup_len"]
-
-
-def test_distance_to_5prime() -> None:
+    # Check the xgroup distance to 5'
     first = seq.seq.find("X")
-    assert first == features["dist_from_5"]
 
+    assert first == seq_xgroups[0].dist_from_5
 
-def test_distance_to_3prime() -> None:
+    # Check the xgroup distance to 3'
     last = seq.seq.rfind("X")
     dist = len(seq.seq) - last - 1
-    assert dist == features["dist_from_3"]
 
+    assert dist == seq_xgroups[0].dist_from_3
 
-def test_normalseq_noxgroups() -> None:
-    assert len(no_xgroups) == 0
-
-
-def test_get_seq_class() -> None:
-    seq_class = masked_seqs_stats.get_seq_class(features_list)
+    # Check the seq class
     assert seq_class == 3
-
-
-def test_seq_class_attribution() -> None:
-    assert features["seq_class"] == 3
