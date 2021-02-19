@@ -63,6 +63,18 @@ class ESTSeq:
 
         # Alignments
         self.al_list = []
+        self.al_count = len(self.al_list)
+
+    def __str__(self) -> str:
+        return (
+            f"Sequence {self.seq_id} for {self.taxon}\nSequence length: "
+            f"{self.seq_len}\nSequence class: {self.seq_class}\nX-groups count: "
+            f"{self.xgroup_count}\nAlignments count: {self.al_count}\nAlignments: "
+            f"{self.al_listl}"
+        )
+
+    def __repr__(self) -> str:
+        return f"ESTSeq<{self.taxon}:{self.seq_id}>"
 
 
 def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecord]:
@@ -232,6 +244,8 @@ def main():
         else:
             # Create a list of ESTSeq objects without alignment information
             raw_estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
+
+        print(raw_estseq_list[0])
 
         # TODO: implement this
         finished_estseq_list = update_xgroup_info(taxon, raw_estseq_list)
