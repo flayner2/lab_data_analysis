@@ -1,10 +1,18 @@
+# Standard lib imports
 import re
 
+# Third-party imports
 from Bio.SeqIO import SeqRecord
+
+# Own module imports
 from helpers import masked_seqs_stats
 
 
 def test_seq_without_xgroups() -> None:
+    """Test if the module masked_seqs_stats can successfully take a sequence that has
+    no vector masked subsequences and produce the expected empty output
+    """
+
     seq = SeqRecord(
         seq=(
             "ACCTATAGGTTGTCGTCGACAAAGAAATGAATCAACTTCCTCTGGTGGTT"
@@ -27,6 +35,9 @@ def test_seq_without_xgroups() -> None:
 
 
 def test_seq_with_xgroups() -> None:
+    """Test if the module masked_seqs_stats can successfully find the groups of masked
+    vector subsequences (xgroups) in a sequence that contains one of them
+    """
 
     seq = SeqRecord(
         seq=(
