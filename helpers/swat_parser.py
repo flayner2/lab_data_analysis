@@ -41,6 +41,7 @@ class AlignmentRecord(Record):
         self.z_score = z_score
         self.subject = subject
         self.al_positions = []
+        self.position_counts = len(self.al_positions)
 
     def set_alignment_positions(self, positions: tuple[int]) -> None:
         """Sets the indexes corresponding to the starting and ending positions of an
@@ -51,6 +52,19 @@ class AlignmentRecord(Record):
             positions for a particular alignment for a given sequence.
         """
         self.al_positions.append(positions)
+
+    def __repr__(self) -> str:
+        """Defines a formal representation of an AlignmentRecord.
+
+        Returns:
+            str: a more formal representation of an AlignmentRecord. For example:
+
+                AlignmentRecord<polyA|ABC001|8.1|3>
+        """
+        return (
+            f"AlignmentRecord<{self.subject}|{self.id}|{self.z_score}"
+            f"|{self.position_counts}>"
+        )
 
 
 class SwatParser(Parser):
