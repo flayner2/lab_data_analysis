@@ -16,7 +16,7 @@ import filter_seqs
 import masked_seqs_stats
 import swat_parser
 
-
+# TODO: Create a setter for masked_seq
 class ESTSeq:
     """
     A class to hold information about a particular EST sequence, with properties
@@ -184,7 +184,7 @@ def load_alignments(
         return alignments_list
 
 
-# NOTE: maybe try to optimze this function
+# FIXME: optimze this function, it's taking way to long to run
 def create_estseq_list(
     taxon: str,
     clean_seqs: list[SeqRecord],
@@ -228,13 +228,14 @@ def create_estseq_list(
                 # so we break
                 break
 
+        # MAYBE: move this to its own function or to the one that builds the XGroups
         # Set the alignments list for the ESTSeq object
         if alignments:
             for alignment in alignments:
                 # Find an AlignmentRecord that corresponds to our ESTSeq's id
                 if alignment.id == new_estseq.seq_id:
                     # Append that AlignmentRecord to the ESTSeq's alignments list
-                    new_estseq.al_list.append(alignment)
+                    new_estseq.set_alignments(alignment)
 
         # Finally, append that ESTSeq to the final list of ESTSeqs
         estseq_list.append(new_estseq)
@@ -250,7 +251,7 @@ def update_xgroup_info(taxon: str, estseq_list: list[ESTSeq]) -> list[ESTSeq]:
 def main():
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
-    # NOTE: maybe make this cross-OS compatible with os.path.join
+    # MAYBE: make this cross-OS compatible with os.path.join
     common_root_dir = "/home/maycon/Documents/LAB/eusociality/local_data"
 
     # The subdirs
