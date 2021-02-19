@@ -66,15 +66,34 @@ class ESTSeq:
         self.al_count = len(self.al_list)
 
     def __str__(self) -> str:
+        """Defines a string representation of an ESTSeq object.
+
+        Returns:
+            str: the string representation of the ESTSeq. For example:
+
+                Sequence ABC001 for Homo sapiens
+                Sequence length: 100bp
+                Sequence class: 1
+                X-groups count: 2
+                Alignments count: 2
+                Alignments: [AlignmentRecord<polyA|8.1|3>, AlignmentRecord<polyT|9.3|1>]
+        """
         return (
             f"Sequence {self.seq_id} for {self.taxon}\nSequence length: "
-            f"{self.seq_len}\nSequence class: {self.seq_class}\nX-groups count: "
+            f"{self.seq_len}bp\nSequence class: {self.seq_class}\nX-groups count: "
             f"{self.xgroup_count}\nAlignments count: {self.al_count}\nAlignments: "
             f"{self.al_listl}"
         )
 
     def __repr__(self) -> str:
-        return f"ESTSeq<{self.taxon}:{self.seq_id}>"
+        """Defines a formal representation of an ESTSeq object.
+
+        Returns:
+            str: a more formal representation of the ESTSeq. For example:
+
+                ESTSeq<Homo_sapiens|ABC001>
+        """
+        return f"ESTSeq<{self.taxon}|{self.seq_id}>"
 
 
 def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecord]:
