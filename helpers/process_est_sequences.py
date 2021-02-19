@@ -50,19 +50,38 @@ class ESTSeq:
         self.masked_seq = masked_seq
         self.clean_seq = clean_seq
 
-        # Calculated attributes
+        # The length of the original sequence
         self.seq_len = len(self.clean_seq)
 
-        # Initialize default and empty values
-        # Xgroups
-        self.xgroup_list = []
-        self.xgroup_count = len(self.xgroup_list)
-
-        # Seq class
+        # Sequence class based on its XGroups
         self.seq_class = 0
 
-        # Alignments
+        # List of XGroups, initalized as an empty list
+        self.xgroup_list = []
+
+        # List of AlignmentRecords, initalized as an empty list
         self.al_list = []
+
+    def set_xgroups(self, xgroup: masked_seqs_stats.XGroup) -> None:
+        """A setter to update the list of XGroups for the sequence. Also updates
+        the count of XGroups.
+
+        Args:
+            xgroup (masked_seqs_stats.XGroup): a XGroup object belonging to this
+            sequence.
+        """
+        self.xgroup_list.append(xgroup)
+        self.xgroup_count = len(self.xgroup_list)
+
+    def set_alignments(self, alignment: swat_parser.AlignmentRecord) -> None:
+        """A setter to update the list of AlignmentRecords for the sequence. Also
+        updates the count of AlignmentRecords.
+
+        Args:
+            alignment (swat_parser.AlignmentRecord): an AlignmentRecord object
+            belonging to this sequence.
+        """
+        self.al_list.append(alignment)
         self.al_count = len(self.al_list)
 
     def __str__(self) -> str:
@@ -83,7 +102,7 @@ class ESTSeq:
             f"Sequence {self.seq_id} for {self.taxon}\nSequence length: "
             f"{self.seq_len}bp\nSequence class: {self.seq_class}\nX-groups count: "
             f"{self.xgroup_count}\nAlignments count: {self.al_count}\nAlignments: "
-            f"{self.al_listl}"
+            f"{self.al_list}"
         )
 
     def __repr__(self) -> str:
