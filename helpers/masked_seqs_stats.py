@@ -2,6 +2,25 @@ from Bio.SeqIO import SeqRecord
 import re
 
 
+class XGroup:
+    """
+    An XGroup represents a vector-masked subsequence of a particular sequence. It is
+    called XGroup because the subsequence is represented as a string o "X"s.
+    """
+
+    def __init__(self, xgroup_len: int, dist_from_5: int, dist_from_3: int) -> None:
+
+        # Length of the sequence of "X"s
+        self.xgroup_len = xgroup_len
+
+        # The distances from 5' and 3'
+        self.dist_from_5 = dist_from_5
+        self.dist_from_3 = dist_from_3
+
+    def __repr__(self) -> str:
+        return f"XGroup<{self.xgroup_len}|{self.dist_from_5}|{self.dist_from_3}>"
+
+
 def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list[dict]:
     """Takes a nucleotide sequence with masked regions represented by Xs and calculates
     the number o X regions, the length of each X region, the distances of each X region
@@ -31,7 +50,7 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord, taxon: str) -> list[
         start, end = match.span()
         xgroup_len = len(match.group())
 
-        seq_features["seq_xgroup_count"] = x_group_counter
+        seq_features["seq_xgroup_count"] = x_group_counter  # TODO: move this down
         seq_features["xgroup_len"] = xgroup_len
         seq_features["dist_from_5"] = start
         seq_features["dist_from_3"] = seq_features["seq_len"] - end
