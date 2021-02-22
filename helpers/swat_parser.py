@@ -67,6 +67,7 @@ class AlignmentRecord(Record):
         )
 
 
+# MAYBE: make this return something if the file doesn't have significant alignments
 class SwatParser(Parser):
     """A Parser for swat alignment output files, which can also calculate metrics such
     as the start and end position of a particular sequence's alignment.
