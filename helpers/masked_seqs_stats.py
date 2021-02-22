@@ -9,7 +9,7 @@ on the number, length and distance to ends of its XGroups, if there are any.
 import re
 
 # Third party imports
-from Bio.SeqIO import SeqRecord
+from Bio.Seq import Seq
 
 
 class XGroup:
@@ -57,13 +57,13 @@ class XGroup:
         return f"XGroup<{self.xgroup_len}|{self.dist_from_5}|{self.dist_from_3}>"
 
 
-def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
+def find_x_regions_and_calculate_stats(sequence: Seq) -> tuple[int, list]:
     """Takes a nucleotide sequence with masked regions represented by "X"s and
     calculates the length of each X region, the distances of each X region to the 3'
     and 5' ends of the sequence and the sequence class based on X region features.
 
     Args:
-        sequence (SeqRecord): a SeqRecord object representing a nucleotide sequence.
+        sequence (Seq): a Seq object representing a nucleotide sequence.
 
     Returns:
         tuple[int, list]: a tuple containing the sequence class as an integer from 0 to
@@ -77,7 +77,7 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
     # Search the string version of the sequence for any continous occurences of "X"s
     # of any length. With finditer() we get all the possible occurences.
     pattern = re.compile(r"X+")
-    search_res = pattern.finditer(str(sequence.seq))
+    search_res = pattern.finditer(str(sequence))
 
     seq_class, xgroups = (0, [])
 
@@ -93,7 +93,7 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
         # In turn, we need to calculate the distance from 3' by subtracting the length
         # of the original sequence by the end position of the "X" subsequence, which is
         # the index of the last "X".
-        dist_from_3 = len(sequence.seq) - end
+        dist_from_3 = len(sequence) - end
 
         # Create a new XGroup object with the information collected above
         new_xgroup = XGroup(
