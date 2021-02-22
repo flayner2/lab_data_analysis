@@ -71,6 +71,9 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
         subsequence in the sequence if there are any, otherwise returns an empty list.
     """
 
+    assert sequence is not None, "Sequence can't be None. Check your data."
+    assert "X" in sequence, "Sequence is not vector-masked. Check your data."
+
     # Search the string version of the sequence for any continous occurences of "X"s
     # of any length. With finditer() we get all the possible occurences.
     pattern = re.compile(r"X+")
