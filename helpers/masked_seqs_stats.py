@@ -18,12 +18,16 @@ class XGroup:
     called XGroup because the subsequence is represented as a string o "X"s.
     """
 
-    def __init__(self, xgroup_len: int, dist_from_5: int, dist_from_3: int) -> None:
+    def __init__(
+        self, xgroup_len: int, start: int, end: int, dist_from_5: int, dist_from_3: int
+    ) -> None:
         """Creates a XGroup object that corresponds to a continuous subsequence of "X"s
         belonging to a sequence.
 
         Args:
             xgroup_len (int): the length of the subsequence.
+            start (int): the starting position of the XGroup in the parent sequence.
+            end (int): the last position of the XGroup in the parent sequence.
             dist_from_5 (int): the distance from the beginning of the sequence to the
             first "X" character of the XGroup.
             dist_from_3 (int): the distance from the last "X" character of the XGroup
@@ -32,6 +36,10 @@ class XGroup:
 
         # Length of the sequence of "X"s
         self.xgroup_len = xgroup_len
+
+        # The starting and ending positions of the XGroup
+        self.start = start
+        self.end = end
 
         # The distances from 5' and 3'
         self.dist_from_5 = dist_from_5
@@ -86,7 +94,11 @@ def find_x_regions_and_calculate_stats(sequence: SeqRecord) -> tuple[int, list]:
 
         # Create a new XGroup object with the information collected above
         new_xgroup = XGroup(
-            xgroup_len=xgroup_len, dist_from_5=start, dist_from_3=dist_from_3
+            xgroup_len=xgroup_len,
+            start=start,
+            end=end,
+            dist_from_5=start,
+            dist_from_3=dist_from_3,
         )
         # Add it to the list of XGroups
         xgroups.append(new_xgroup)
