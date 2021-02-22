@@ -358,10 +358,12 @@ def main():
         # Create a list of ESTSeq objects
         estseq_list = create_estseq_list(taxon, clean_seqs)
 
+        # Add the vector-masked sequences for each ESTSeq that have one
         set_masked_seqs_for_ESTSeqs(
             seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
         )
 
+        # Add the information about the XGroups for the ESTSeqs
         set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
 
         # If the taxon is not "Polistes_canadensis", for which we don't have good
