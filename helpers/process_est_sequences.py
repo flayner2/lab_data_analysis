@@ -16,7 +16,7 @@ import filter_seqs
 import masked_seqs_stats
 import swat_parser
 
-# TODO: Create a setter for masked_seq
+
 class ESTSeq:
     """
     A class to hold information about a particular EST sequence, with properties
@@ -29,12 +29,10 @@ class ESTSeq:
         seq_id: str,
         taxon: str,
         clean_seq: Seq,
-        masked_seq: Union[Seq, None] = None,
     ) -> None:
-        """Constructs an ESTSeq object with its sequence ID, the taxon it belongs to,
-        its non-vector-masked sequence and possibly its vector-masked sequence if it
-        exists. Calculates the sequence length and initializes empty values for the
-        rest of the properties.
+        """Constructs an ESTSeq object with its sequence ID, the taxon it belongs to
+        and its non-vector-masked sequence. Calculates the sequence length and
+        initializes Null or empty values for the rest of the properties.
 
         Args:
             seq_id (str): the sequence identifier.
@@ -47,8 +45,10 @@ class ESTSeq:
         # Setting the attributes according to the parameters
         self.seq_id = seq_id
         self.taxon = taxon
-        self.masked_seq = masked_seq
         self.clean_seq = clean_seq
+
+        # The vector-masked sequence, should be setted later with its setter
+        self.masked_seq = None
 
         # The length of the original sequence
         self.seq_len = len(self.clean_seq)
@@ -83,6 +83,15 @@ class ESTSeq:
         """
         self.al_list.append(alignment)
         self.al_count = len(self.al_list)
+
+    def set_masked_seq(self, masked_seq: Seq) -> None:
+        """A setter to update the vector-masked sequence for the ESTSeq object.
+
+        Args:
+            masked_seq (Seq): a vector-masked version of the sequence with "X"s in
+            place of the vector sequence.
+        """
+        self.masked_seq = masked_seq
 
     def __str__(self) -> str:
         """Defines a string representation of an ESTSeq object.
