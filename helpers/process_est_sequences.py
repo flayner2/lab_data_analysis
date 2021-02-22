@@ -5,6 +5,7 @@ of masked vector sequences and aligned polyA and polyT sequences
 # Standard lib imports
 import os
 from typing import Union, Optional
+from copy import deepcopy
 
 # Third-party imports
 from Bio import SeqIO
@@ -197,63 +198,55 @@ def load_alignments(
 def create_estseq_list(
     taxon: str,
     clean_seqs: list[SeqRecord],
-    masked_seqs: list[SeqRecord],
-    alignments: list[Optional[swat_parser.AlignmentRecord]] = [],
 ) -> list[ESTSeq]:
-    """Builds a list of ESTSeqs for each EST sequence in `clean_seqs` with informations
-    about the vector-masked version of that EST (if it exists) and its alignments (if
-    it has any).
+    """Builds a list of ESTSeqs for each EST sequence in `clean_seqs`.
 
     Args:
         taxon (str): the taxon to which the ESTs belong.
         clean_seqs (list[SeqRecord]): a list of non-vector-masked EST sequences.
-        masked_seqs (list[SeqRecord]): a list of vector-masked EST sequences.
-        alignments (list[Optional[swat_parser.AlignmentRecord]], optional): either a
-        list of alignments of an EST sequence agains a set of subject sequences or an
-        empty list if there are no alignments. Defaults to [].
 
     Returns:
         list[ESTSeq]: [description]
     """
 
-    # A list to hold all built ESTSeq objects
-    estseq_list = []
-
     # Create a new ESTSeq object for each clean SeqRecord object
-    for clean_seq_record in clean_seqs:
-        new_estseq = ESTSeq(
-            seq_id=clean_seq_record.id, taxon=taxon, clean_seq=clean_seq_record.seq
-        )
-
-        for masked_seq_record in masked_seqs:
-            # Find the masked SeqRecord that corresponds to the ESTSeq's id AND has an "X" in it
-            if masked_seq_record.id == new_estseq.seq_id:
-                # If the Seq of the masked SeqRecord contains an "X" in it
-                if "X" in masked_seq_record:
-                    # Then set the new ESTSeq's masked_seq to be that
-                    new_estseq.masked_seq = masked_seq_record.seq
-
-                # We found our masked seq and there's no need to search further
-                # so we break
-                break
-
-        # MAYBE: move this to its own function or to the one that builds the XGroups
-        # Set the alignments list for the ESTSeq object
-        if alignments:
-            for alignment in alignments:
-                # Find an AlignmentRecord that corresponds to our ESTSeq's id
-                if alignment.id == new_estseq.seq_id:
-                    # Append that AlignmentRecord to the ESTSeq's alignments list
-                    new_estseq.set_alignments(alignment)
-
-        # Finally, append that ESTSeq to the final list of ESTSeqs
-        estseq_list.append(new_estseq)
+    estseq_list = [
+        ESTSeq(seq_id=clean_seq_record.id, taxon=taxon, clean_seq=clean_seq_record.seq)
+        for clean_seq_record in clean_seqs
+    ]
 
     return estseq_list
 
 
+def set_masked_seqs_for_ESTSeqs():
+    pass
+    # for masked_seq_record in masked_seqs:
+    #     # Find the masked SeqRecord that corresponds to the ESTSeq's id AND has an "X" in it
+    #     if masked_seq_record.id == new_estseq.seq_id:
+    #         # If the Seq of the masked SeqRecord contains an "X" in it
+    #         if "X" in masked_seq_record:
+    #             # Then set the new ESTSeq's masked_seq to be that
+    #             new_estseq.masked_seq = masked_seq_record.seq
+
+    #         # We found our masked seq and there's no need to search further
+    #         # so we break
+    #         break
+
+
+def set_alignments_for_ESTSeqs():
+    pass
+    # # MAYBE: move this to its own function or to the one that builds the XGroups
+    # # Set the alignments list for the ESTSeq object
+    # if alignments:
+    #     for alignment in alignments:
+    #         # Find an AlignmentRecord that corresponds to our ESTSeq's id
+    #         if alignment.id == new_estseq.seq_id:
+    #             # Append that AlignmentRecord to the ESTSeq's alignments list
+    #             new_estseq.set_alignments(alignment)
+
+
 # TODO: implement this
-def update_xgroup_info(taxon: str, estseq_list: list[ESTSeq]) -> list[ESTSeq]:
+def set_xgroups_for_ESTSeqs(taxon: str, estseq_list: list[ESTSeq]) -> list[ESTSeq]:
     pass
 
 
@@ -291,18 +284,16 @@ def main():
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Create a list of ESTSeq objects
-            raw_estseq_list = create_estseq_list(
-                taxon, clean_seqs, masked_seqs, alignments
-            )
+            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs, alignments)
         # Else if it is PolistesCanadensis, we create a list
         else:
             # Create a list of ESTSeq objects without alignment information
-            raw_estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
+            estseq_list = create_estseq_list(taxon, clean_seqs, masked_seqs)
 
-        print(raw_estseq_list[0])
-
-        # TODO: implement this
-        finished_estseq_list = update_xgroup_info(taxon, raw_estseq_list)
+        # TODO: implement those
+        set_masked_seqs_for_ESTSeqs(taxon, estseq_list, inplace=True)
+        set_alignments_for_ESTSeqs(taxon, estseq_list, inplace=True)
+        set_xgroups_for_ESTSeqs(taxon, estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
