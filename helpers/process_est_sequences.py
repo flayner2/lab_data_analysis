@@ -96,6 +96,14 @@ class ESTSeq:
         """
         self.masked_seq = masked_seq
 
+    def set_seq_class(self, seq_class: int) -> None:
+        """A setter to update the sequence class for the ESTSeq object.
+
+        Args:
+            seq_class (int): an integer representing the sequence class.
+        """
+        self.seq_class = seq_class
+
     def __str__(self) -> str:
         """Defines a string representation of an ESTSeq object.
 
@@ -225,8 +233,9 @@ def set_masked_seqs_for_ESTSeqs(
     Args:
         seqs_list (list[ESTSeq]): a list of ESTSeq objects.
         masked_seqs (list[SeqRecord]): a list of vector-masked SeqRecords.
-        inplace (bool, optional): `True` means the function will mutate the original list
-        passed to `seqs_list`. `False` means it returns a new list. Defaults to False.
+        inplace (bool, optional): `True` means the function will mutate the original
+        list passed to `seqs_list`. `False` means it returns a new list. Defaults to
+        False.
 
     Returns:
         Optional[list[ESTSeq]]: if `inplace` is `False`, returns the new list of ESTSeq
@@ -253,7 +262,7 @@ def set_masked_seqs_for_ESTSeqs(
         return seqs_list
 
 
-# FIXME: make this run faster
+# FIXME: make this run faster, maybe add paralelization
 def set_alignments_for_ESTSeqs(
     seqs_list: list[ESTSeq],
     alignments: list[swat_parser.AlignmentRecord],
@@ -277,14 +286,41 @@ def set_alignments_for_ESTSeqs(
         return seqs_list
 
 
-# TODO: implement this
 def set_xgroups_for_ESTSeqs(
     seqs_list: list[ESTSeq], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
+    """Finds the XGroups belonging to a vector-masked sequence and append them to its
+    list of XGroups, while also calculating and updating its sequence class.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        inplace (bool, optional): `True` means the function will mutate the original
+        list passed to `seqs_list`. `False` means it returns a new list. Defaults to
+        False.
+
+    Returns:
+        Optional[list[ESTSeq]]: if `inplace` is `False`, returns the new list of ESTSeq
+        objects with information about their corresponding masked sequences. If it is
+        `True`, returns `None`.
+    """
+
     # If we don't wanna mutate the original list and objects,
     # we operate on a copy of it.
     if not inplace:
         seqs_list = deepcopy(seqs_list)
+
+    for estseq in seqs_list:
+        if estseq.masked_seq:
+            # Get the class and list of XGroups for the ESTSeq
+            seq_class, xgroups = masked_seqs_stats.find_x_regions_and_calculate_stats(
+                estseq.masked_seq
+            )
+
+            estseq.set_seq_class(seq_class)
+
+            # Add each of the XGroups to the ESTSeq's list of XGroups
+            for xgroup in xgroups:
+                estseq.set_xgroups(xgroup)
 
     # If we're not mutating the list inplace, we need to return the new list
     if not inplace:
@@ -326,6 +362,8 @@ def main():
             seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
         )
 
+        set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
+
         # If the taxon is not "Polistes_canadensis", for which we don't have good
         # alignment information, we don't try to load or assign its alignments.
         # MAYBE: find another way around this.
@@ -333,16 +371,8 @@ def main():
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Set the alignments for each ESTSeq
-            # TODO: implement this
+            # FIXME: fix the running time for this function
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
-
-        for seq in estseq_list:
-            if seq.al_list:
-                print(seq.al_list)
-                break
-
-        # TODO: implement this
-        set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
