@@ -280,6 +280,11 @@ def main():
         clean_seqs = load_seqs(taxon, clean_seqs_dir)
         masked_seqs = load_seqs(taxon, masked_seqs_dir, extension=".screen")
 
+        # Filter the masked seqs to make sure all sequences contain "X"s
+        masked_seqs = [
+            masked_seq for masked_seq in masked_seqs if "X" in masked_seq.seq
+        ]
+
         # If the taxon is not "Polistes_canadensis", for which we don't have good
         # alignment information
         if taxon != taxa_list[1]:
