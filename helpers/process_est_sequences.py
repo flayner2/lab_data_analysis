@@ -234,6 +234,8 @@ def set_masked_seqs_for_ESTSeqs(
         `True`, returns `None`.
     """
 
+    assert len(masked_seqs) > 0, "No masked sequences for this taxon. Check your data."
+
     # If we don't wanna mutate the original list and objects,
     # we operate on a copy of it.
     if not inplace:
@@ -251,21 +253,42 @@ def set_masked_seqs_for_ESTSeqs(
         return seqs_list
 
 
-def set_alignments_for_ESTSeqs():
-    pass
-    # # MAYBE: move this to its own function or to the one that builds the XGroups
-    # # Set the alignments list for the ESTSeq object
-    # if alignments:
-    #     for alignment in alignments:
-    #         # Find an AlignmentRecord that corresponds to our ESTSeq's id
-    #         if alignment.id == new_estseq.seq_id:
-    #             # Append that AlignmentRecord to the ESTSeq's alignments list
-    #             new_estseq.set_alignments(alignment)
+# FIXME: make this run faster
+def set_alignments_for_ESTSeqs(
+    seqs_list: list[ESTSeq],
+    alignments: list[swat_parser.AlignmentRecord],
+    inplace: bool = False,
+) -> Optional[list[ESTSeq]]:
+
+    assert len(alignments) > 0, "No alignments found for this taxon. Check your data."
+
+    # If we don't wanna mutate the original list and objects,
+    # we operate on a copy of it.
+    if not inplace:
+        seqs_list = deepcopy(seqs_list)
+
+    for estseq in seqs_list:
+        for alignment in alignments:
+            if alignment.id == estseq.seq_id:
+                estseq.set_alignments(alignment)
+
+    # If we're not mutating the list inplace, we need to return the new list
+    if not inplace:
+        return seqs_list
 
 
 # TODO: implement this
-def set_xgroups_for_ESTSeqs(taxon: str, estseq_list: list[ESTSeq]) -> list[ESTSeq]:
-    pass
+def set_xgroups_for_ESTSeqs(
+    seqs_list: list[ESTSeq], inplace: bool = False
+) -> Optional[list[ESTSeq]]:
+    # If we don't wanna mutate the original list and objects,
+    # we operate on a copy of it.
+    if not inplace:
+        seqs_list = deepcopy(seqs_list)
+
+    # If we're not mutating the list inplace, we need to return the new list
+    if not inplace:
+        return seqs_list
 
 
 def main():
@@ -299,22 +322,27 @@ def main():
         # Create a list of ESTSeq objects
         estseq_list = create_estseq_list(taxon, clean_seqs)
 
-        # TODO: implement those
         set_masked_seqs_for_ESTSeqs(
             seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
         )
 
-        print(estseq_list[0])
-
         # If the taxon is not "Polistes_canadensis", for which we don't have good
         # alignment information, we don't try to load or assign its alignments.
+        # MAYBE: find another way around this.
         if taxon != taxa_list[1]:
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Set the alignments for each ESTSeq
-            set_alignments_for_ESTSeqs(taxon, estseq_list, inplace=True)
+            # TODO: implement this
+            set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
 
-        set_xgroups_for_ESTSeqs(taxon, estseq_list, inplace=True)
+        for seq in estseq_list:
+            if seq.al_list:
+                print(seq.al_list)
+                break
+
+        # TODO: implement this
+        set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
