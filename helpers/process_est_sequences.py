@@ -6,6 +6,7 @@ of masked vector sequences and aligned polyA and polyT sequences
 import os
 from typing import Union, Optional
 from copy import deepcopy
+from time import perf_counter
 
 # Third-party imports
 from Bio import SeqIO
@@ -73,8 +74,9 @@ class ESTSeq:
             xgroup (masked_seqs_stats.XGroup): a XGroup object belonging to this
             sequence.
         """
-        self.xgroup_list.append(xgroup)
-        self.xgroup_count = len(self.xgroup_list)
+        if xgroup:
+            self.xgroup_list.append(xgroup)
+            self.xgroup_count = len(self.xgroup_list)
 
     def set_alignments(self, alignment: swat_parser.AlignmentRecord) -> None:
         """A setter to update the list of AlignmentRecords for the sequence. Also
@@ -84,8 +86,9 @@ class ESTSeq:
             alignment (swat_parser.AlignmentRecord): an AlignmentRecord object
             belonging to this sequence.
         """
-        self.al_list.append(alignment)
-        self.al_count = len(self.al_list)
+        if alignment:
+            self.al_list.append(alignment)
+            self.al_count = len(self.al_list)
 
     def set_masked_seq(self, masked_seq: Seq) -> None:
         """A setter to update the vector-masked sequence for the ESTSeq object.
@@ -94,7 +97,8 @@ class ESTSeq:
             masked_seq (Seq): a vector-masked version of the sequence with "X"s in
             place of the vector sequence.
         """
-        self.masked_seq = masked_seq
+        if masked_seq:
+            self.masked_seq = masked_seq
 
     def set_seq_class(self, seq_class: int) -> None:
         """A setter to update the sequence class for the ESTSeq object.
@@ -102,7 +106,8 @@ class ESTSeq:
         Args:
             seq_class (int): an integer representing the sequence class.
         """
-        self.seq_class = seq_class
+        if seq_class:
+            self.seq_class = seq_class
 
     def __str__(self) -> str:
         """Defines a string representation of an ESTSeq object.
@@ -224,6 +229,7 @@ def create_estseq_list(taxon: str, clean_seqs: list[SeqRecord]) -> list[ESTSeq]:
     return estseq_list
 
 
+# FIXME: make this run faster
 def set_masked_seqs_for_ESTSeqs(
     seqs_list: list[ESTSeq], masked_seqs: list[SeqRecord], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
@@ -262,7 +268,6 @@ def set_masked_seqs_for_ESTSeqs(
         return seqs_list
 
 
-# FIXME: make this run faster, maybe add paralelization
 def set_alignments_for_ESTSeqs(
     seqs_list: list[ESTSeq],
     alignments: list[swat_parser.AlignmentRecord],
@@ -276,10 +281,12 @@ def set_alignments_for_ESTSeqs(
     if not inplace:
         seqs_list = deepcopy(seqs_list)
 
+    # Make a dictionary from the list of AlignmentRecord objects,
+    # where each id is the key and the object itself is the value
+    alignments_map = {alignment.id: alignment for alignment in alignments}
+
     for estseq in seqs_list:
-        for alignment in alignments:
-            if alignment.id == estseq.seq_id:
-                estseq.set_alignments(alignment)
+        estseq.set_alignments(alignments_map.get(estseq.seq_id, None))
 
     # If we're not mutating the list inplace, we need to return the new list
     if not inplace:
@@ -358,10 +365,13 @@ def main():
         # Create a list of ESTSeq objects
         estseq_list = create_estseq_list(taxon, clean_seqs)
 
+        tic = perf_counter()
         # Add the vector-masked sequences for each ESTSeq that have one
-        set_masked_seqs_for_ESTSeqs(
-            seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
-        )
+        # set_masked_seqs_for_ESTSeqs(
+        #     seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
+        # )
+        toc = perf_counter()
+        print(f"took {toc - tic} seconds")
 
         # Add the information about the XGroups for the ESTSeqs
         set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
@@ -373,8 +383,12 @@ def main():
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Set the alignments for each ESTSeq
-            # FIXME: fix the running time for this function
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
+
+        # for estseq in estseq_list:
+        #     if len(estseq.al_list) > 1:
+        #         print(estseq.al_list)
+        #         break
 
 
 if __name__ == "__main__":
