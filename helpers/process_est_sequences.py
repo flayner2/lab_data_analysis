@@ -4,10 +4,9 @@ of masked vector sequences and aligned polyA and polyT sequences
 """
 # Standard lib imports
 import os
-from typing import Union, Optional
+from typing import Optional
 from copy import deepcopy
 from collections import defaultdict
-from time import perf_counter
 
 # Third-party imports
 from Bio import SeqIO
@@ -181,7 +180,8 @@ def load_alignments(
         list[swat_parser.AlignmentRecord]: a list containing an AlignmentRecord object
         for each sequence for the `taxon`.
     """
-
+    # A list to hold all AlignmentRecord objects for each sequence
+    # of a particular taxon.
     alignments_list = []
 
     # Find the file for each subject sequence
@@ -197,7 +197,7 @@ def load_alignments(
                 else:
                     alignments_file_path = os.path.join(path, al_file)
 
-        # Generate the list of AlignmentRecord objects
+        # Update the list of AlignmentRecord objects
         alignments_list.extend(
             swat_parser.SwatParser.parse_swat_allscores(all_scores_file_path, subject)
         )
@@ -235,7 +235,6 @@ def create_estseq_list(taxon: str, clean_seqs: list[SeqRecord]) -> list[ESTSeq]:
     return estseq_list
 
 
-# FIXME: make this run faster
 def set_masked_seqs_for_ESTSeqs(
     seqs_list: list[ESTSeq], masked_seqs: list[SeqRecord], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
@@ -262,12 +261,15 @@ def set_masked_seqs_for_ESTSeqs(
     if not inplace:
         seqs_list = deepcopy(seqs_list)
 
-    # Find the corresponding masked sequence for each ESTSeq object, if there is one
+    # Make a dictionary from the list of masked_seqs,
+    # where each id is the key and the sequence itself is the value.
+    masked_seqs_map = {
+        masked_seq_record.id: masked_seq_record.seq for masked_seq_record in masked_seqs
+    }
+
+    # Set the corresponding masked sequence for each ESTSeq object, if there is one.
     for estseq in seqs_list:
-        for masked_seq_record in masked_seqs:
-            if masked_seq_record.id == estseq.seq_id:
-                estseq.set_masked_seq(masked_seq_record.seq)
-                break
+        estseq.set_masked_seq(masked_seqs_map.get(estseq.seq_id, None))
 
     # If we're not mutating the list inplace, we need to return the new list
     if not inplace:
@@ -376,12 +378,9 @@ def main():
         estseq_list = create_estseq_list(taxon, clean_seqs)
 
         # Add the vector-masked sequences for each ESTSeq that have one
-        tic = perf_counter()
         set_masked_seqs_for_ESTSeqs(
             seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
         )
-        toc = perf_counter()
-        print(f"took {toc - tic} seconds")
 
         # Add the information about the XGroups for the ESTSeqs
         set_xgroups_for_ESTSeqs(seqs_list=estseq_list, inplace=True)
