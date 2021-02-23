@@ -6,6 +6,7 @@ of masked vector sequences and aligned polyA and polyT sequences
 import os
 from typing import Union, Optional
 from copy import deepcopy
+from collections import defaultdict
 from time import perf_counter
 
 # Third-party imports
@@ -87,7 +88,9 @@ class ESTSeq:
             belonging to this sequence.
         """
         if alignment:
-            self.al_list.append(alignment)
+            # The interface for this method gives back a list,
+            # that's why we extend instead of appending.
+            self.al_list.extend(alignment)
             self.al_count = len(self.al_list)
 
     def set_masked_seq(self, masked_seq: Seq) -> None:
@@ -179,6 +182,8 @@ def load_alignments(
         for each sequence for the `taxon`.
     """
 
+    alignments_list = []
+
     # Find the file for each subject sequence
     for subject in subjects:
         # Find the alignment files for a taxon
@@ -193,9 +198,10 @@ def load_alignments(
                     alignments_file_path = os.path.join(path, al_file)
 
         # Generate the list of AlignmentRecord objects
-        alignments_list = swat_parser.SwatParser.parse_swat_allscores(
-            all_scores_file_path, subject
+        alignments_list.extend(
+            swat_parser.SwatParser.parse_swat_allscores(all_scores_file_path, subject)
         )
+
         # Generate a dict of alignment positions for each sequence
         positions_dict = swat_parser.SwatParser.parse_swat_alignment_output(
             alignments_file_path
@@ -206,7 +212,7 @@ def load_alignments(
             for positions in positions_dict[alignment.id]:
                 alignment.set_alignment_positions(positions)
 
-        return alignments_list
+    return alignments_list
 
 
 def create_estseq_list(taxon: str, clean_seqs: list[SeqRecord]) -> list[ESTSeq]:
@@ -282,8 +288,12 @@ def set_alignments_for_ESTSeqs(
         seqs_list = deepcopy(seqs_list)
 
     # Make a dictionary from the list of AlignmentRecord objects,
-    # where each id is the key and the object itself is the value
-    alignments_map = {alignment.id: alignment for alignment in alignments}
+    # where each id is the key and the object itself is the value.
+    # The best way to account for multiple entries for the same key is to
+    # use a defaultdict of lists. That's why we don't use a comprehension here.
+    alignments_map = defaultdict(list)
+    for alignment in alignments:
+        alignments_map[alignment.id].append(alignment)
 
     for estseq in seqs_list:
         estseq.set_alignments(alignments_map.get(estseq.seq_id, None))
@@ -365,11 +375,11 @@ def main():
         # Create a list of ESTSeq objects
         estseq_list = create_estseq_list(taxon, clean_seqs)
 
-        tic = perf_counter()
         # Add the vector-masked sequences for each ESTSeq that have one
-        # set_masked_seqs_for_ESTSeqs(
-        #     seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
-        # )
+        tic = perf_counter()
+        set_masked_seqs_for_ESTSeqs(
+            seqs_list=estseq_list, masked_seqs=masked_seqs, inplace=True
+        )
         toc = perf_counter()
         print(f"took {toc - tic} seconds")
 
@@ -384,11 +394,6 @@ def main():
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Set the alignments for each ESTSeq
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
-
-        # for estseq in estseq_list:
-        #     if len(estseq.al_list) > 1:
-        #         print(estseq.al_list)
-        #         break
 
 
 if __name__ == "__main__":
