@@ -49,8 +49,13 @@ class ESTSeq:
         self.taxon = taxon
         self.clean_seq = clean_seq
 
-        # The vector-masked sequence, should be setted later with its setter
+        # The vector-masked sequence, should be set later with its setter
         self.masked_seq = None
+
+        # The processed sequence, should be set later with its setter
+        # This sequence is gonna change a lot over time because we need to
+        # perform mutiple filtering and trimming steps on the original sequence
+        self.processed_seq = None
 
         # The length of the original sequence
         self.seq_len = len(self.clean_seq)
@@ -101,6 +106,16 @@ class ESTSeq:
         """
         if masked_seq:
             self.masked_seq = masked_seq
+
+    def set_processed_seq(self, processed_seq: Seq) -> None:
+        """A setter to update the processed sequence for the ESTSeq object.
+
+        Args:
+            processed_seq (Seq): a processed version of the sequence with "X"s in
+            place of the vector sequence.
+        """
+        if processed_seq:
+            self.processed_seq = processed_seq
 
     def set_seq_class(self, seq_class: int) -> None:
         """A setter to update the sequence class for the ESTSeq object.
@@ -346,7 +361,7 @@ def set_xgroups_for_ESTSeqs(
         return seqs_list
 
 
-def main():
+def main() -> None:
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
     # MAYBE: make this cross-OS compatible with os.path.join
@@ -393,6 +408,8 @@ def main():
             alignments = load_alignments(taxon, alignments_dir, subjects)
             # Set the alignments for each ESTSeq
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
+
+        # TODO: filter the list of ESTSeqs to remove class 4 ESTSeqs
 
 
 if __name__ == "__main__":
