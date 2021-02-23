@@ -43,7 +43,7 @@ class AlignmentRecord(Record):
         self.raw_score = raw_score
         self.z_score = z_score
         self.subject = subject
-        self.al_positions = []
+        self.al_positions = None
         self.position_counts = len(self.al_positions)
 
     def set_alignment_positions(self, positions: tuple[int]) -> None:
@@ -54,7 +54,7 @@ class AlignmentRecord(Record):
             positions (tuple[int]): a 2-tuple containing the (start, end) alignment
             positions for a particular alignment for a given sequence.
         """
-        self.al_positions.append(positions)
+        self.al_positions = positions
 
     def __repr__(self) -> str:
         """Defines a formal representation of an AlignmentRecord.
