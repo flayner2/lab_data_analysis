@@ -21,6 +21,9 @@ class Parser:
         raise NotImplementedError
 
 
+# FIXME: each AlignmentRecord should only contain information about a single alignment
+# so we have to make sure that if there is more than one alignment for a sequence, we
+# are going to record both of them as separate objects
 class AlignmentRecord(Record):
     """A Record containing information about its alignment against another subject
     sequence."""
@@ -111,6 +114,8 @@ class SwatParser(Parser):
 
         return result_records
 
+    # TODO: make this discriminate between two different alignments for the same
+    # sequence, by something like their z-scores.
     @staticmethod
     def parse_swat_alignment_output(
         alignment_file: str,
@@ -168,7 +173,7 @@ class SwatParser(Parser):
             positions of each alignment since there may be > 1 alignment for a given
             sequence.
         """
-        result_positions = defaultdict(list)
+        result_positions = defaultdict(tuple)
 
         with open(alignment_file, "r") as alignments_file:
             entire_file = alignments_file.read()
@@ -223,6 +228,6 @@ class SwatParser(Parser):
                 end = int(alignment_blocks[-1].split("\n")[0].split()[-1])
 
                 # Now we are done with this sequence, so put it into the dict
-                result_positions[seq_id].append((start, end))
+                result_positions[seq_id] = (start, end)
 
         return result_positions
