@@ -113,7 +113,7 @@ class SwatParser(Parser):
     def parse_swat_alignment_output(
         alignment_file: str,
         separator_string: str = "Matches ranked by decreasing z-scores:",
-    ) -> defaultdict[str, tuple[int, int, int, float]]:
+    ) -> defaultdict[str, list[tuple[int, int, int, float]]]:
         """Parses a file containing the `swat` alignment output. This output is by
         default redirected to STDOUT, so you'll have to redirect the STDOUT to a file
         when running `swat` to generate such files.
@@ -161,13 +161,13 @@ class SwatParser(Parser):
             each other, so this feature is not fully functional on its own yet.
 
         Returns:
-            defaultdict[str, tuple[int, int, int, float]]: a dictionary where the keys
-            are sequence IDs and the values are 4-tuples of `(start, end, score, z)`
-            for each alignment. `score` and `z` could end up being redundant values or
-            they could be used to resolve redundancies, since there might be more than
-            one alignment for the same sequence ID.
+            defaultdict[str, list[tuple[[int, int, int, float]]]: a dictionary where
+            the keys are sequence IDs and the values are lists of 4-tuples of
+            `(start, end, score, z)` for each alignment. `score` and `z` could end up
+            being redundant values or they could be used to resolve redundancies, since
+            there might be more than one alignment for the same sequence ID.
         """
-        result_positions = defaultdict(tuple)
+        result_positions = defaultdict(list)
 
         with open(alignment_file, "r") as alignments_file:
             entire_file = alignments_file.read()
@@ -237,6 +237,6 @@ class SwatParser(Parser):
                 end = int(alignment_blocks[-1].split("\n")[0].split()[-1])
 
                 # Now we are done with this sequence, so put it into the dict
-                result_positions[seq_id] = (start, end, raw_score, z_score)
+                result_positions[seq_id].append((start, end, raw_score, z_score))
 
         return result_positions
