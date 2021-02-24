@@ -3,6 +3,11 @@ This script removes certain subsequences from a sequence. For example, vector-ma
 subsequences represented by "X"s or polynucleotide subsequences such as poly-A and
 poly-T tails.
 """
+
+# Standard lib imports
+from copy import deepcopy
+from typing import Optional
+
 # Third-party imports
 from Bio.Seq import Seq
 
@@ -126,20 +131,62 @@ def remove_xgroup_by_seq_class(seq: Seq, seq_class: int, xgroups: list[XGroup]) 
         return trim_x_and_3prime(seq, xgroups=xgroups)
 
 
-def trim_polynucleotide_subsequence(seq: Seq, al_positions: tuple[int]) -> Seq:
-    start, end = al_positions
+def trim_subsequence(seq: Seq, positions: tuple[int, int]) -> Seq:
+    """Trims a subsequence from a sequence, returning a new Seq object containing
+    the sequence without the trimmed region.
+
+    Args:
+        seq (Seq): the original sequence to be trimmed.
+        positions (tuple[int, int]): a 2-tuple with (start, end) positions of the
+        subsequence to be removed. Note that it is assumed that the positions are
+        1-indexed instead of 0-indexed.
+
+    Returns:
+        Seq: a new Seq object containing the original sequence without the trimmed
+        region.
+    """
+
+    start, end = positions
 
     filtered_seq = seq[: start - 1] + seq[end:]
 
     return filtered_seq
 
 
-def trim_polynucleotides_by_dist_to_xgroups(estseq: ESTSeq) -> Seq:
+def trim_polynucleotides_by_dist_to_xgroups(
+    estseq: ESTSeq, max_dist: int = 10, z_cutoff: float = 8.0, inplace: bool = False
+) -> Optional[ESTSeq]:
+    """Wrapper to allow the trimming of subsequences aligned to a sequence based
+    on their distance to XGroup regions and their z_score.
+
+    Args:
+        estseq (ESTSeq): the ESTSeq object with the original sequences, XGroup and
+        alignment information.
+        max_dist (int, optional): the maximum allowed distance, in nucleotides, from
+        the alignment region to any XGroup region. Defaults to 10.
+        z_cutoff (float, optional): the minimum z-score value for the alignment to be
+        eligible for trimming. Defaults to 8.0.
+        inplace (bool, optional): whether the changes should happen in place or a new
+        ESTSeq should be returned. Defaults to False.
+
+    Returns:
+        Optional[ESTSeq]: either a new ESTSeq object with a `processed_seq` property
+        without its trimmed alignment regions, or None.
+    """
+
+    # If we don't want the changes to happen inplace, copy the object.
+    if not inplace:
+        estseq = deepcopy(estseq)
+
     # To check if a polynucleotide subsequence is to be removed from seq
-    # we need to check if it is at most 10 bases away from a XGroup.
-    # MAYBE: check for the alignment z-score before trimming it
+    # we need to check if it is at most `max_dist` bases away from a XGroup.
     if estseq.xgroup_list:
         for alignment in estseq.al_list:
+            # Do a quick check to only allow trimming alignments that have a z-score
+            # of at least `z_cutoff`.
+            if alignment.z_score < z_cutoff:
+                continue
+
             al_start, al_end = alignment.al_positions
 
             for xgroup in estseq.xgroup_list:
@@ -157,17 +204,17 @@ def trim_polynucleotides_by_dist_to_xgroups(estseq: ESTSeq) -> Seq:
                     dist = al_start - x_end
 
                 # We will only trim the polynucleotide sequences if they are
-                # at most 10 bases away from the XGroup.
-                if dist <= 10:
+                # at most `max_dist` bases away from the XGroup.
+                if dist <= max_dist:
                     # This check is needed because this could be the second
                     # time we try to trim the same sequence, and we want to do
                     # that on the updated sequence to keep it updated.
                     if estseq.processed_seq:
-                        filtered_sequence = trim_polynucleotide_subsequence(
+                        filtered_sequence = trim_subsequence(
                             estseq.processed_seq, (al_start, al_end)
                         )
                     else:
-                        filtered_sequence = trim_polynucleotide_subsequence(
+                        filtered_sequence = trim_subsequence(
                             estseq.masked_seq, (al_start, al_end)
                         )
 
@@ -176,3 +223,8 @@ def trim_polynucleotides_by_dist_to_xgroups(estseq: ESTSeq) -> Seq:
                     # If we found a valid alignment and removed it from the sequence
                     # we don't need to check distances for that alignment anymore.
                     break
+
+    # If we don't want the changes to happen inplace, we need
+    # to return the new version of the estseq.
+    if not inplace:
+        return estseq
