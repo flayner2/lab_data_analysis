@@ -74,13 +74,13 @@ class ESTSeq:
             self.xgroup_list.append(xgroup)
             self.xgroup_count = len(self.xgroup_list)
 
-    def set_alignments(self, alignment: swat_parser.AlignmentRecord) -> None:
+    def set_alignments(self, alignment: list[swat_parser.AlignmentRecord]) -> None:
         """A setter to update the list of AlignmentRecords for the sequence. Also
         updates the count of AlignmentRecords.
 
         Args:
-            alignment (swat_parser.AlignmentRecord): an AlignmentRecord object
-            belonging to this sequence.
+            alignment (list[swat_parser.AlignmentRecord]): a list of AlignmentRecord
+            objects belonging to this sequence.
         """
         if alignment:
             # The interface for this method gives back a list,
