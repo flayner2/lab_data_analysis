@@ -3,6 +3,8 @@ A Python script to parse the results of an alignment produced by running `swat`.
 It parses both a .alignment and a .allscores file. A .alignment file can be produced by
 redirecting `swat`'s STDOUT to a file.
 """
+
+# Standard lib imports
 import sys
 from collections import defaultdict
 
@@ -21,9 +23,6 @@ class Parser:
         raise NotImplementedError
 
 
-# FIXME: each AlignmentRecord should only contain information about a single alignment
-# so we have to make sure that if there is more than one alignment for a sequence, we
-# are going to record both of them as separate objects
 class AlignmentRecord(Record):
     """A Record containing information about its alignment against another subject
     sequence."""
@@ -44,15 +43,14 @@ class AlignmentRecord(Record):
         self.z_score = z_score
         self.subject = subject
         self.al_positions = None
-        self.position_counts = len(self.al_positions)
 
-    def set_alignment_positions(self, positions: tuple[int]) -> None:
+    def set_alignment_positions(self, positions: tuple[int, int]) -> None:
         """Sets the indexes corresponding to the starting and ending positions of an
         alignment, where the subject is aligned with the sequence.
 
         Args:
-            positions (tuple[int]): a 2-tuple containing the (start, end) alignment
-            positions for a particular alignment for a given sequence.
+            positions (tuple[int, int]): a 2-tuple containing the `(start, end)`
+            alignment positions for a particular alignment for a given sequence.
         """
         self.al_positions = positions
 
@@ -62,12 +60,9 @@ class AlignmentRecord(Record):
         Returns:
             str: a more formal representation of an AlignmentRecord. For example:
 
-                AlignmentRecord<polyA|ABC001|8.1|3>
+                AlignmentRecord<polyA|ABC001|8.1>
         """
-        return (
-            f"AlignmentRecord<{self.subject}|{self.id}|{self.z_score}"
-            f"|{self.position_counts}>"
-        )
+        return f"AlignmentRecord<{self.subject}|{self.id}|{self.z_score}>"
 
 
 # MAYBE: make this return something if the file doesn't have significant alignments
@@ -114,13 +109,11 @@ class SwatParser(Parser):
 
         return result_records
 
-    # TODO: make this discriminate between two different alignments for the same
-    # sequence, by something like their z-scores.
     @staticmethod
     def parse_swat_alignment_output(
         alignment_file: str,
         separator_string: str = "Matches ranked by decreasing z-scores:",
-    ) -> defaultdict[str, list[tuple[int, int]]]:
+    ) -> defaultdict[str, tuple[int, int, int, float]]:
         """Parses a file containing the `swat` alignment output. This output is by
         default redirected to STDOUT, so you'll have to redirect the STDOUT to a file
         when running `swat` to generate such files.
@@ -168,10 +161,11 @@ class SwatParser(Parser):
             each other, so this feature is not fully functional on its own yet.
 
         Returns:
-            defaultdict[str, list[tuple[int, int]]]: a dictionary where the keys are
-            sequence IDs and the values is a list of tuples containing the (start, end)
-            positions of each alignment since there may be > 1 alignment for a given
-            sequence.
+            defaultdict[str, tuple[int, int, int, float]]: a dictionary where the keys
+            are sequence IDs and the values are 4-tuples of `(start, end, score, z)`
+            for each alignment. `score` and `z` could end up being redundant values or
+            they could be used to resolve redundancies, since there might be more than
+            one alignment for the same sequence ID.
         """
         result_positions = defaultdict(tuple)
 
@@ -201,10 +195,25 @@ class SwatParser(Parser):
                 alignment_details = each_alignment.split("\n\n")
 
                 # The first alignment block should actually be a description of the
-                # sequence, so we'll get the id from there. If we split it by spaces,
-                # then the first object will be the sequence id. We pop the first block
-                # because it makes it easier to process the next ones
-                seq_id = alignment_details.pop(0).split()[0]
+                # sequence, so we'll get the id from there. We split it by lines to
+                # get both the ID and the scores for the alignemnt. The scores can be
+                # used to resolve ambiguities or to add information.
+                first_block = alignment_details.pop(0).splitlines()
+                # If we split the first line by spaces, then the first object will be
+                # the sequence id. We pop the first block because it makes it easier to
+                # process the next ones.
+                seq_id = first_block.pop(0).split()[0]
+                # The scores are in the second line of the first block, which is now the
+                # first element in the list. If we split by two spaces we get each item
+                # to be a score value.
+                scores = first_block.pop(0).strip().split("  ")
+                # Raw score is gonna be the first item, and z-score the second one. The
+                # numerical values appear after something like "Score: ", so we split
+                # by ": " and take the last item.
+                raw_score, z_score = (
+                    int(scores[0].split(": ")[-1]),
+                    float(scores[1].split(": ")[-1]),
+                )
 
                 # All alignment blocks have a Subject and a Query sequence. This is
                 # just a sanitization check
@@ -228,6 +237,6 @@ class SwatParser(Parser):
                 end = int(alignment_blocks[-1].split("\n")[0].split()[-1])
 
                 # Now we are done with this sequence, so put it into the dict
-                result_positions[seq_id] = (start, end)
+                result_positions[seq_id] = (start, end, raw_score, z_score)
 
         return result_positions
