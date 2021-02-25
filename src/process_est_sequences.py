@@ -265,9 +265,39 @@ def remove_poly_sequences_by_distance(
 
 
 def remove_xgroups_by_class(
-    seqs_list: list[ESTSeq], inplace: bool = False
+    seqs_list: list[ESTSeq], target_classes: list[int], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
-    pass
+
+    # If we don't wanna mutate the original list and objects,
+    # we operate on a copy of it.
+    if not inplace:
+        seqs_list = deepcopy(seqs_list)
+
+    for estseq in seqs_list:
+        # Check if the sequence class belongs to the list of valid classes
+        if estseq.seq_class in target_classes:
+            # Check if a processed seq already exists, e.g. from previous trimming
+            # of alignment regions.
+            if estseq.processed_seq:
+                new_seq = filter_seqs.remove_xgroup_by_seq_class(
+                    seq=estseq.processed_seq,
+                    seq_class=estseq.seq_class,
+                    xgroups=estseq.xgroup_list,
+                )
+            # If not, this is the first time we're processing the sequence so pass in
+            # the masked seq.
+            else:
+                new_seq = filter_seqs.remove_xgroup_by_seq_class(
+                    seq=estseq.masked_seq,
+                    seq_class=estseq.seq_class,
+                    xgroups=estseq.xgroup_list,
+                )
+
+            estseq.set_processed_seq(new_seq)
+
+    # If we're not mutating the list inplace, we need to return the new list.
+    if not inplace:
+        return seqs_list
 
 
 def main() -> None:
@@ -327,7 +357,10 @@ def main() -> None:
         )
 
         # Remove XGroups based on sequence class
-        remove_xgroups_by_class(seqs_list=estseq_list, inplace=True)
+        target_classes = [1, 3, 6, 7]
+        remove_xgroups_by_class(
+            seqs_list=estseq_list, target_classes=target_classes, inplace=True
+        )
 
 
 if __name__ == "__main__":
