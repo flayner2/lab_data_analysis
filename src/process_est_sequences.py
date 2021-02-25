@@ -301,6 +301,10 @@ def remove_xgroups_by_class(
         return seqs_list
 
 
+def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str) -> None:
+    pass
+
+
 def main() -> None:
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -362,6 +366,9 @@ def main() -> None:
         remove_xgroups_by_class(
             seqs_list=estseq_list, target_classes=target_classes, inplace=True
         )
+
+        # Save the sequences so far as intermediate files for a new round of alignments
+        save_intermediate_files(seqs_list=estseq_list, taxon=taxon)
 
 
 if __name__ == "__main__":
