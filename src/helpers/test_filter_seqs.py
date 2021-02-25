@@ -8,7 +8,7 @@ from . import masked_seqs_stats
 from .estseq import ESTSeq
 from .swat_parser import AlignmentRecord
 
-
+# TODO: document all tests
 def test_null_seq():
     with pytest.raises(AssertionError):
         filter_seqs.remove_xgroup_by_seq_class(None, None, None)
