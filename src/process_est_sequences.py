@@ -264,6 +264,7 @@ def remove_poly_sequences_by_distance(
         return final_list
 
 
+# TODO: document this
 def remove_xgroups_by_class(
     seqs_list: list[ESTSeq], target_classes: list[int], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
