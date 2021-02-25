@@ -276,7 +276,10 @@ def main() -> None:
             # Set the alignments for each ESTSeq
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
 
-        # TODO: filter the list of ESTSeqs to remove class 4 ESTSeqs
+        print(len(estseq_list))
+        # Remove class 4 ESTSeqs
+        estseq_list = [estseq for estseq in estseq_list if estseq.seq_class != 4]
+        print(len(estseq_list))
 
 
 if __name__ == "__main__":
