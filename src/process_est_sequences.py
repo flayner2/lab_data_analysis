@@ -228,6 +228,15 @@ def set_xgroups_for_ESTSeqs(
         return seqs_list
 
 
+def remove_poly_sequences_by_distance(
+    seqs_list: list[ESTSeq],
+    max_dist: int = 10,
+    cutoff: float = 8.0,
+    inplace: bool = True,
+) -> Optional[list[ESTSeq]]:
+    pass
+
+
 def main() -> None:
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -276,10 +285,11 @@ def main() -> None:
             # Set the alignments for each ESTSeq
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
 
-        print(len(estseq_list))
         # Remove class 4 ESTSeqs
         estseq_list = [estseq for estseq in estseq_list if estseq.seq_class != 4]
-        print(len(estseq_list))
+
+        # Remove polynucleotide subsequences
+        remove_poly_sequences_by_distance(seqs_list=estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
