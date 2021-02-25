@@ -315,7 +315,9 @@ def main() -> None:
         estseq_list = [estseq for estseq in estseq_list if estseq.seq_class != 4]
 
         # Remove polynucleotide subsequences
-        remove_poly_sequences_by_distance(seqs_list=estseq_list, inplace=True)
+        remove_poly_sequences_by_distance(
+            seqs_list=estseq_list, max_dist=10, cutoff=8.0, inplace=True
+        )
 
 
 if __name__ == "__main__":
