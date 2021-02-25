@@ -228,6 +228,7 @@ def set_xgroups_for_ESTSeqs(
         return seqs_list
 
 
+# TODO: document this
 def remove_poly_sequences_by_distance(
     seqs_list: list[ESTSeq],
     max_dist: int = 10,
@@ -261,6 +262,12 @@ def remove_poly_sequences_by_distance(
     # If we're not mutating the list inplace, we need to return the new list.
     if not inplace:
         return final_list
+
+
+def remove_xgroups_by_class(
+    seqs_list: list[ESTSeq], inplace: bool = False
+) -> Optional[list[ESTSeq]]:
+    pass
 
 
 def main() -> None:
@@ -318,6 +325,9 @@ def main() -> None:
         remove_poly_sequences_by_distance(
             seqs_list=estseq_list, max_dist=10, cutoff=8.0, inplace=True
         )
+
+        # Remove XGroups based on sequence class
+        remove_xgroups_by_class(seqs_list=estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
