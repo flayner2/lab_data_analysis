@@ -117,6 +117,12 @@ class ESTSeq:
         if seq_class:
             self.seq_class = seq_class
 
+    def clear_alignments(self) -> None:
+        """A helper method to reset the alignments of an ESTSeq object."""
+
+        self.al_list = []
+        self.al_count = 0
+
     def __str__(self) -> str:
         """Defines a string representation of an ESTSeq object.
 
