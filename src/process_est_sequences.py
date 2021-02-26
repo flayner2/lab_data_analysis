@@ -10,7 +10,6 @@ from collections import defaultdict
 
 # Third-party imports
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 # Own modules
@@ -41,6 +40,7 @@ def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecor
             return list(SeqIO.parse(seq_file_path, "fasta"))
 
 
+# FIXME: on the parser, check for empty alignments
 def load_alignments(
     taxon: str, path: str, subjects: list[str]
 ) -> list[swat_parser.AlignmentRecord]:
@@ -360,9 +360,12 @@ def main() -> None:
     # Subject sequences we align against
     subjects = ["polyA", "polyT"]
 
-    # Directories for the result files
+    # Directories for the intermediate result files
     intermediate_dir = os.path.join(
         common_root_dir, "intermediate_results", "2021-02-25"
+    )
+    intermediate_alignments_dir = os.path.join(
+        common_root_dir, "alignments", "2021-02-25"
     )
 
     # Loop over each taxon
@@ -417,6 +420,14 @@ def main() -> None:
 
         # Clear the old alignments
         clear_old_alignments(seqs_list=estseq_list, inplace=True)
+
+        # Load the new alignments
+        if taxon != taxa_list[1]:
+            # Load all alignments for the taxon
+            alignments = load_alignments(taxon, intermediate_alignments_dir, subjects)
+            # Set the alignments for each ESTSeq
+            # FIXME: check for empty alignments from the parser
+            set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
 
 
 if __name__ == "__main__":
