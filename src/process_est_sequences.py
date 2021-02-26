@@ -301,8 +301,25 @@ def remove_xgroups_by_class(
         return seqs_list
 
 
-def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str) -> None:
-    pass
+# TODO: document this
+def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str, dir: str) -> None:
+
+    # Create a path to the output file, named for each taxon.
+    result_file = f"{taxon}_intermediate_trimming.fasta"
+    result_path = os.path.join(dir, result_file)
+
+    with open(result_path, "a") as outfile:
+        for estseq in seqs_list:
+            # If there's a processed sequence, this is our new Seq.
+            if estseq.processed_seq:
+                new_seq = Seq(estseq.processed_seq)
+            # Otherwise, we save the clean sequence instead.
+            else:
+                new_seq = Seq(estseq.clean_seq)
+
+            # We crate a new SeqRecord for that sequence and save it in FASTA format.
+            new_record = SeqRecord(new_seq, estseq.seq_id, estseq.seq_id)
+            outfile.write(new_record.format("fasta"))
 
 
 def main() -> None:
@@ -321,6 +338,11 @@ def main() -> None:
 
     # Subject sequences we align against
     subjects = ["polyA", "polyT"]
+
+    # Directories for the result files
+    intermediate_dir = os.path.join(
+        common_root_dir, "intermediate_results", "2021-02-25"
+    )
 
     # Loop over each taxon
     for taxon in taxa_list:
@@ -368,7 +390,9 @@ def main() -> None:
         )
 
         # Save the sequences so far as intermediate files for a new round of alignments
-        save_intermediate_files(seqs_list=estseq_list, taxon=taxon)
+        save_intermediate_files(
+            seqs_list=estseq_list, taxon=taxon, dir=intermediate_dir
+        )
 
 
 if __name__ == "__main__":
