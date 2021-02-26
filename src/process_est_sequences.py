@@ -324,6 +324,25 @@ def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str, dir: str) -> No
             outfile.write(new_record.format("fasta"))
 
 
+# TODO: document this
+def clear_old_alignments(
+    seqs_list: list[ESTSeq], inplace: bool = False
+) -> Optional[list[ESTSeq]]:
+    # If we don't wanna mutate the original list and objects,
+    # we operate on a copy of it.
+    if not inplace:
+        seqs_list = deepcopy(seqs_list)
+
+    for estseq in seqs_list:
+        # We only care about ESTSeq objects that have alignments in the first place.
+        if estseq.al_list:
+            estseq.clear_alignments()
+
+    # If we're not mutating the list inplace, we need to return the new list.
+    if not inplace:
+        return seqs_list
+
+
 def main() -> None:
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -395,6 +414,9 @@ def main() -> None:
         save_intermediate_files(
             seqs_list=estseq_list, taxon=taxon, dir=intermediate_dir
         )
+
+        # Clear the old alignments
+        clear_old_alignments(seqs_list=estseq_list, inplace=True)
 
 
 if __name__ == "__main__":
