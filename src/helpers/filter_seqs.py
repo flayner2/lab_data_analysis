@@ -234,6 +234,23 @@ def trim_polynucleotides_by_dist_to_xgroups(
 def trim_polynucleotides_by_dist_to_ends(
     estseq: ESTSeq, max_dist: int = 20, z_cutoff: float = 30.0, inplace: bool = False
 ) -> Optional[ESTSeq]:
+    """Wrapper to allow the trimming of subsequences aligned to a sequence based
+    on their distance to the sequence ends and their z_score.
+
+    Args:
+        estseq (ESTSeq): the ESTSeq object with the original sequences and alignment
+        information.
+        max_dist (int, optional): the maximum allowed distance, in nucleotides, from
+        the alignment region to any sequence end. Defaults to 20.
+        z_cutoff (float, optional): the minimum z-score value for the alignment to be
+        eligible for trimming. Defaults to 30.0.
+        inplace (bool, optional): whether the changes should happen in place or a new
+        ESTSeq should be returned. Defaults to False.
+
+    Returns:
+        Optional[ESTSeq]: either a new ESTSeq object with a `processed_seq` property
+        without its trimmed alignment regions, or None.
+    """
 
     # If we don't want the changes to happen inplace, copy the object.
     if not inplace:
