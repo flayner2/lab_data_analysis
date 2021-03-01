@@ -187,7 +187,7 @@ class SwatParser(Parser):
                     )
                 )
 
-            if all_alignments == "":
+            if all_alignments.strip() == "":
                 return None
 
             # If everything is fine, we proceed
