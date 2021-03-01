@@ -315,10 +315,10 @@ def remove_xgroups_by_class(
 
 
 # TODO: document this
-def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str, dir: str) -> None:
+def save_files(seqs_list: list[ESTSeq], taxon: str, dir: str, file_suffix: str) -> None:
 
     # Create a path to the output file, named for each taxon.
-    result_file = f"{taxon}_intermediate_trimming.fasta"
+    result_file = f"{taxon}_{file_suffix}.fasta"
     result_path = os.path.join(dir, result_file)
 
     if not os.path.exists(result_path):
@@ -360,6 +360,23 @@ def clear_old_alignments(
         return seqs_list
 
 
+# TODO: document this
+def remove_small_seqs(seqs_list: list[ESTSeq], min_len: int = 100) -> list[ESTSeq]:
+    final_sequences = []
+
+    for estseq in seqs_list:
+        if estseq.processed_seq:
+            if len(estseq.processed_seq) < min_len:
+                continue
+        else:
+            if estseq.seq_len < min_len:
+                continue
+
+        final_sequences.append(estseq)
+
+    return final_sequences
+
+
 def main() -> None:
     # The path to the common directory, from which we access
     # the subdirectories containing the sequences or alignments
@@ -384,6 +401,9 @@ def main() -> None:
     intermediate_alignments_dir = os.path.join(
         common_root_dir, "alignments", "2021-02-25"
     )
+
+    # Directories for the result files
+    results_dir = os.path.join(common_root_dir, "filtered_ests", "2021-03-01")
 
     # Loop over each taxon
     for taxon in taxa_list:
@@ -431,8 +451,11 @@ def main() -> None:
         )
 
         # Save the sequences so far as intermediate files for a new round of alignments
-        save_intermediate_files(
-            seqs_list=estseq_list, taxon=taxon, dir=intermediate_dir
+        save_files(
+            seqs_list=estseq_list,
+            taxon=taxon,
+            dir=intermediate_dir,
+            file_suffix="intermediate_trimming",
         )
 
         # Clear the old alignments
@@ -445,9 +468,20 @@ def main() -> None:
             # Set the alignments for each ESTSeq
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
 
-        # Remove polynucleotide subsequences
+        # Remove polynucleotide subsequences by their distance to the seq ends
         remove_poly_sequences_by_distance(
             seqs_list=estseq_list, max_dist=20, cutoff=30.0, inplace=True, to="ends"
+        )
+
+        # Remove all sequences with length < 100
+        final_estseqs = remove_small_seqs(estseq_list, min_len=100)
+
+        # Save the final result files
+        save_files(
+            seqs_list=final_estseqs,
+            taxon=taxon,
+            dir=results_dir,
+            file_suffix="final_trimmed_ests",
         )
 
 
