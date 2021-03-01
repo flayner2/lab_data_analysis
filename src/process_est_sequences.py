@@ -235,6 +235,7 @@ def remove_poly_sequences_by_distance(
     max_dist: int = 10,
     cutoff: float = 8.0,
     inplace: bool = False,
+    to: str = "xgroups",
 ) -> Optional[list[ESTSeq]]:
 
     # If we don't wanna mutate the original list and objects,
@@ -248,17 +249,28 @@ def remove_poly_sequences_by_distance(
         # with inplace = True, then both the original list and the original objects
         # will be mutated.
         if inplace:
-            filter_seqs.trim_polynucleotides_by_dist_to_xgroups(
-                estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
-            )
+            if to == "xgroups":
+                filter_seqs.trim_polynucleotides_by_dist_to_xgroups(
+                    estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
+                )
+            elif to == "ends":
+                filter_seqs.trim_polynucleotides_by_dist_to_ends(
+                    estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
+                )
         # Otherwise, a new list with new objects will be created and returned. Note
         # that this is not the same as creating a deepcopy of the original list and
         # mutating the original objects. Here, nothing is being mutated.
         else:
-            new_estseq = filter_seqs.trim_polynucleotides_by_dist_to_xgroups(
-                estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
-            )
-            final_list.append(new_estseq)
+            if to == "xgroups":
+                new_estseq = filter_seqs.trim_polynucleotides_by_dist_to_xgroups(
+                    estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
+                )
+                final_list.append(new_estseq)
+            elif to == "ends":
+                new_estseq = filter_seqs.trim_polynucleotides_by_dist_to_ends(
+                    estseq=estseq, max_dist=max_dist, z_cutoff=cutoff, inplace=inplace
+                )
+                final_list.append(new_estseq)
 
     # If we're not mutating the list inplace, we need to return the new list.
     if not inplace:
@@ -427,8 +439,12 @@ def main() -> None:
             # Load all alignments for the taxon
             alignments = load_alignments(taxon, intermediate_alignments_dir, subjects)
             # Set the alignments for each ESTSeq
-            # FIXME: check for empty alignments from the parser
             set_alignments_for_ESTSeqs(estseq_list, alignments=alignments, inplace=True)
+
+        # Remove polynucleotide subsequences
+        remove_poly_sequences_by_distance(
+            seqs_list=estseq_list, max_dist=20, cutoff=30.0, inplace=True, to="ends"
+        )
 
 
 if __name__ == "__main__":
