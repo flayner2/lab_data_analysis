@@ -7,6 +7,7 @@ redirecting `swat`'s STDOUT to a file.
 # Standard lib imports
 import sys
 from collections import defaultdict
+from typing import Optional
 
 
 class Record:
@@ -113,7 +114,7 @@ class SwatParser(Parser):
     def parse_swat_alignment_output(
         alignment_file: str,
         separator_string: str = "Matches ranked by decreasing z-scores:",
-    ) -> defaultdict[str, list[tuple[int, int, int, float]]]:
+    ) -> Optional[defaultdict[str, list[tuple[int, int, int, float]]]]:
         """Parses a file containing the `swat` alignment output. This output is by
         default redirected to STDOUT, so you'll have to redirect the STDOUT to a file
         when running `swat` to generate such files.
@@ -161,11 +162,12 @@ class SwatParser(Parser):
             each other, so this feature is not fully functional on its own yet.
 
         Returns:
-            defaultdict[str, list[tuple[[int, int, int, float]]]: a dictionary where
-            the keys are sequence IDs and the values are lists of 4-tuples of
-            `(start, end, score, z)` for each alignment. `score` and `z` could end up
-            being redundant values or they could be used to resolve redundancies, since
-            there might be more than one alignment for the same sequence ID.
+            Optional[defaultdict[str, list[tuple[[int, int, int, float]]]]: either a
+            dictionary wherethe keys are sequence IDs and the values are lists of
+            4-tuples of `(start, end, score, z)` for each alignment. `score` and `z`
+            could end up being redundant values or they could be used to resolve
+            redundancies, since there might be more than one alignment for the same
+            sequence ID or None if there are no alignmets.
         """
         result_positions = defaultdict(list)
 
@@ -184,6 +186,9 @@ class SwatParser(Parser):
                         "or that your separator exists in the file."
                     )
                 )
+
+            if all_alignments == "":
+                return None
 
             # If everything is fine, we proceed
             # Each alignment record is separated from the next one by two blank lines
