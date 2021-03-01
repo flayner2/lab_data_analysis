@@ -40,7 +40,6 @@ def load_seqs(taxon: str, path: str, extension: str = ".fasta") -> list[SeqRecor
             return list(SeqIO.parse(seq_file_path, "fasta"))
 
 
-# FIXME: on the parser, check for empty alignments
 def load_alignments(
     taxon: str, path: str, subjects: list[str]
 ) -> list[swat_parser.AlignmentRecord]:
@@ -229,7 +228,6 @@ def set_xgroups_for_ESTSeqs(
         return seqs_list
 
 
-# TODO: document this
 def remove_poly_sequences_by_distance(
     seqs_list: list[ESTSeq],
     max_dist: int = 10,
@@ -237,6 +235,25 @@ def remove_poly_sequences_by_distance(
     inplace: bool = False,
     to: str = "xgroups",
 ) -> Optional[list[ESTSeq]]:
+    """Removes polynucleotides aligned to a sequence based on a quality cutoff
+    and their distance to some specified position.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        max_dist (int, optional): the maximum tolerated distance between any end of the
+        alignment to the closest target position. Defaults to 10.
+        cutoff (float, optional): the minimum tolerated value for the quality metric.
+        Defaults to 8.0.
+        inplace (bool, optional): inplace (bool, optional): `True` means the function
+        will mutate the original list passed to `seqs_list`. `False` means it returns a
+        new list. Defaults to False.
+        to (str, optional): the target position to compare the distance to. Defaults to
+        "xgroups".
+
+    Returns:
+        Optional[list[ESTSeq]]: if `inplace` is `False`, returns the new list of ESTSeq
+        objects without the removed alignment regions. If it is `True`, returns `None`.
+    """
 
     # If we don't wanna mutate the original list and objects,
     # we create a new list to hold the new objects. Inplace also
@@ -277,10 +294,24 @@ def remove_poly_sequences_by_distance(
         return final_list
 
 
-# TODO: document this
 def remove_xgroups_by_class(
     seqs_list: list[ESTSeq], target_classes: list[int], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
+    """Removes vector-masked subsequences from a sequence  based on the sequence
+    class.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        target_classes (list[int]): a list containing the sequence classes that
+        allow for XGroup trimming.
+        inplace (bool, optional): inplace (bool, optional): `True` means the function
+        will mutate the original list passed to `seqs_list`. `False` means it returns a
+        new list. Defaults to False.
+
+    Returns:
+        Optional[list[ESTSeq]]: if `inplace` is `False`, returns the new list of ESTSeq
+        objects without the removed XGroups. If it is `True`, returns `None`.
+    """
 
     # If we don't wanna mutate the original list and objects,
     # we operate on a copy of it.
@@ -314,8 +345,16 @@ def remove_xgroups_by_class(
         return seqs_list
 
 
-# TODO: document this
 def save_files(seqs_list: list[ESTSeq], taxon: str, dir: str, file_suffix: str) -> None:
+    """Saves result files for a specified taxon to a specified directory. Files will be
+    named after the taxon and will contain the specified suffix.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        taxon (str): the taxon to which the sequences belong to.
+        dir (str): the destination directory for the result files.
+        file_suffix (str): a common suffix for the result files.
+    """
 
     # Create a path to the output file, named for each taxon.
     result_file = f"{taxon}_{file_suffix}.fasta"
@@ -341,10 +380,23 @@ def save_files(seqs_list: list[ESTSeq], taxon: str, dir: str, file_suffix: str) 
                 outfile.write(new_record.format("fasta"))
 
 
-# TODO: document this
 def clear_old_alignments(
     seqs_list: list[ESTSeq], inplace: bool = False
 ) -> Optional[list[ESTSeq]]:
+    """Clears the old alignments for a list of ESTSeqs by replacing their alignments
+    lists with empty lists.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        inplace (bool, optional): inplace (bool, optional): `True` means the function
+        will mutate the original list passed to `seqs_list`. `False` means it returns a
+        new list. Defaults to False.
+
+    Returns:
+        Optional[list[ESTSeq]]: if `inplace` is `False`, returns the new list of ESTSeq
+        objects with empty alignment lists. If it is `True`, returns `None`.
+    """
+
     # If we don't wanna mutate the original list and objects,
     # we operate on a copy of it.
     if not inplace:
@@ -360,8 +412,18 @@ def clear_old_alignments(
         return seqs_list
 
 
-# TODO: document this
 def remove_small_seqs(seqs_list: list[ESTSeq], min_len: int = 100) -> list[ESTSeq]:
+    """Removes sequences from a list of ESTSeq objects based on their seq length.
+
+    Args:
+        seqs_list (list[ESTSeq]): a list of ESTSeq objects.
+        min_len (int, optional): the minumum length for the sequences. Defaults to 100.
+
+    Returns:
+        list[ESTSeq]: a list of ESTSeq records only containing those which have a seq
+        or processed seq with length >= `min_len`.
+    """
+
     final_sequences = []
 
     for estseq in seqs_list:
