@@ -86,13 +86,14 @@ def load_alignments(
 
         # Set the alignment positions for each AlignmentRecord
         for alignment in alignments_list:
-            for positions in positions_dict[alignment.id]:
-                *pos, score, z = positions
+            if positions_dict:
+                for positions in positions_dict[alignment.id]:
+                    *pos, score, z = positions
 
-                # Check if we're actually dealing with the correct alignment
-                # by also comparing the scores, to help us remove ambiguity.
-                if alignment.raw_score == score and alignment.z_score == z:
-                    alignment.set_alignment_positions(tuple(pos))
+                    # Check if we're actually dealing with the correct alignment
+                    # by also comparing the scores, to help us remove ambiguity.
+                    if alignment.raw_score == score and alignment.z_score == z:
+                        alignment.set_alignment_positions(tuple(pos))
 
     return alignments_list
 
