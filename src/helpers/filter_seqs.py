@@ -230,7 +230,6 @@ def trim_polynucleotides_by_dist_to_xgroups(
         return estseq
 
 
-# TODO: Document this
 def trim_polynucleotides_by_dist_to_ends(
     estseq: ESTSeq, max_dist: int = 20, z_cutoff: float = 30.0, inplace: bool = False
 ) -> Optional[ESTSeq]:
