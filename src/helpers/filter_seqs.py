@@ -228,3 +228,48 @@ def trim_polynucleotides_by_dist_to_xgroups(
     # to return the new version of the estseq.
     if not inplace:
         return estseq
+
+
+# TODO: Document this
+def trim_polynucleotides_by_dist_to_ends(
+    estseq: ESTSeq, max_dist: int = 20, z_cutoff: float = 30.0, inplace: bool = False
+) -> Optional[ESTSeq]:
+
+    # If we don't want the changes to happen inplace, copy the object.
+    if not inplace:
+        estseq = deepcopy(estseq)
+
+    for alignment in estseq.al_list:
+        # If the z-score is too low or if there are no alignment positions
+        # we don't care about this alignment.
+        if alignment.z_score < z_cutoff or not alignment.al_positions:
+            continue
+
+        for position in alignment.al_positions:
+            start, end = position
+
+            # The sequence length might be different between the clean
+            # and the processed seq. We need to calculate the distance based
+            # on the length of the sequence we're operating on.
+            if estseq.processed_seq:
+                seq_len = len(estseq.processed_seq)
+            else:
+                seq_len = estseq.seq_len
+
+            dist_to_5 = start
+            dist_to_3 = seq_len - end
+
+            if dist_to_5 < max_dist or dist_to_3 < max_dist:
+                if estseq.processed_seq:
+                    filtered_sequence = trim_subsequence(
+                        estseq.processed_seq, (start, end)
+                    )
+                else:
+                    filtered_sequence = trim_subsequence(estseq.clean_seq, (start, end))
+
+                estseq.set_processed_seq(filtered_sequence)
+
+    # If we don't want the changes to happen inplace, we need
+    # to return the new version of the estseq.
+    if not inplace:
+        return estseq
