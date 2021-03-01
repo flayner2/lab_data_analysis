@@ -321,20 +321,24 @@ def save_intermediate_files(seqs_list: list[ESTSeq], taxon: str, dir: str) -> No
     result_file = f"{taxon}_intermediate_trimming.fasta"
     result_path = os.path.join(dir, result_file)
 
-    with open(result_path, "a+") as outfile:
-        for estseq in seqs_list:
-            # If there's a processed sequence, this is our new Seq.
-            if estseq.processed_seq:
-                new_record = SeqRecord(
-                    estseq.processed_seq, estseq.seq_id, estseq.seq_id
-                )
-            # Otherwise, we save the clean sequence instead.
-            else:
-                new_record = SeqRecord(estseq.clean_seq, estseq.seq_id, estseq.seq_id)
+    if not os.path.exists(result_path):
+        with open(result_path, "a+") as outfile:
+            for estseq in seqs_list:
+                # If there's a processed sequence, this is our new Seq.
+                if estseq.processed_seq:
+                    new_record = SeqRecord(
+                        estseq.processed_seq, estseq.seq_id, estseq.seq_id
+                    )
+                # Otherwise, we save the clean sequence instead.
+                else:
+                    new_record = SeqRecord(
+                        estseq.clean_seq, estseq.seq_id, estseq.seq_id
+                    )
 
-            # We crate a new SeqRecord for that sequence and save it in FASTA format.
+                # We crate a new SeqRecord for that sequence and save it in
+                # FASTA format.
 
-            outfile.write(new_record.format("fasta"))
+                outfile.write(new_record.format("fasta"))
 
 
 # TODO: document this
