@@ -245,29 +245,26 @@ def trim_polynucleotides_by_dist_to_ends(
         if alignment.z_score < z_cutoff or not alignment.al_positions:
             continue
 
-        for position in alignment.al_positions:
-            start, end = position
+        start, end = alignment.al_positions
 
-            # The sequence length might be different between the clean
-            # and the processed seq. We need to calculate the distance based
-            # on the length of the sequence we're operating on.
+        # The sequence length might be different between the clean
+        # and the processed seq. We need to calculate the distance based
+        # on the length of the sequence we're operating on.
+        if estseq.processed_seq:
+            seq_len = len(estseq.processed_seq)
+        else:
+            seq_len = estseq.seq_len
+
+        dist_to_5 = start
+        dist_to_3 = seq_len - end
+
+        if dist_to_5 < max_dist or dist_to_3 < max_dist:
             if estseq.processed_seq:
-                seq_len = len(estseq.processed_seq)
+                filtered_sequence = trim_subsequence(estseq.processed_seq, (start, end))
             else:
-                seq_len = estseq.seq_len
+                filtered_sequence = trim_subsequence(estseq.clean_seq, (start, end))
 
-            dist_to_5 = start
-            dist_to_3 = seq_len - end
-
-            if dist_to_5 < max_dist or dist_to_3 < max_dist:
-                if estseq.processed_seq:
-                    filtered_sequence = trim_subsequence(
-                        estseq.processed_seq, (start, end)
-                    )
-                else:
-                    filtered_sequence = trim_subsequence(estseq.clean_seq, (start, end))
-
-                estseq.set_processed_seq(filtered_sequence)
+            estseq.set_processed_seq(filtered_sequence)
 
     # If we don't want the changes to happen inplace, we need
     # to return the new version of the estseq.
