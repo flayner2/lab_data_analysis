@@ -14,8 +14,28 @@ proteins_id_to_aed <-
     header = F
   )
 
+# Add headers (column names) to both data frames
+colnames(blast_results) <-
+  c(
+    "query_name",
+    "subject_name",
+    "identical_matches_percent",
+    "alignment_length",
+    "mismatches",
+    "gap_openings",
+    "query_start",
+    "query_end",
+    "subject_start",
+    "subject_end",
+    "evalue",
+    "bit_score"
+  )
+colnames(proteins_id_to_aed) <- c("protein_name", "aed_score")
 
+summary(blast_results)
 
-ggplot(data = df) +
-  geom_col(mapping = aes(x = high_score_blast, y = total_blast))
-coord_polar()
+# Distribution of alignment lengths
+ggplot(data = blast_results) +
+  geom_bar(mapping = aes(x = alignment_length)) +
+  labs(title = "Distribution of alignment lengths") +
+  theme(plot.title = element_text(hjust = 0.5))
