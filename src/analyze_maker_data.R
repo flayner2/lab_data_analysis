@@ -155,20 +155,6 @@ ggplot(data = proteins_with_hits) +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_by_one_hit.png")
 
-# AED score for sequences with 100% of identical matches
-ggplot(blast_results) +
-  geom_violin(
-    mapping = aes(
-      x = identical_matches_percent == 100,
-      y = aed_score,
-      fill = identical_matches_percent == 100
-    ),
-    show.legend = F
-  ) +
-  labs(title = "Boxplot of the AED score for hits with 100% of identical matches", x = "100% of Identical matches", y = "AED score") +
-  theme(plot.title = element_text(hjust = 0.5))
-ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
-
 # AED score vs alignment length
 ggplot(data = blast_results) +
   geom_jitter(mapping = aes(x = aed_score, y = alignment_length, color = identical_matches_percent)) +
@@ -189,7 +175,7 @@ ggplot(proteins_id_to_aed) +
   ) +
   labs(title = "AED score distribution for sequences with and without a BLAST hit", x = "Have BLAST hits", y = "AED score") +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
+ggsave("~/Documents/LAB/eusociality/aed_with_or_without_matches.png")
 
 # AED score by number of hits
 proteins_id_to_aed <-
@@ -206,3 +192,30 @@ ggplot(data = proteins_id_to_aed) +
        y = "Number of BLAST hits") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_by_number_of_hits.png")
+
+summary(proteins_id_to_aed)
+
+# High identity hits based on how many hits
+mean_identity <- blast_results %>% group_by(query_name) %>% summarise(identical_matches_percent = mean(identical_matches_percent))
+proteins_id_to_aed <- proteins_id_to_aed %>% inner_join(mean_identity, by = c("protein_name" = "query_name"))
+proteins_id_to_aed %>% filter(blast_hits_number > 0) %>% ggplot() +
+  geom_boxplot(mapping = aes(x = blast_hits_number == 1, y = identical_matches_percent, fill = blast_hits_number == 1), show.legend = F) + 
+  labs(title = "Percentage identity per one or many hits",
+       x = "Only one hit",
+       y = "Mean identical matches (%)") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/identical_matches_vs_hit_once.png")
+
+# AED score for sequences high % (>=95%) of identical matches
+ggplot(proteins_id_to_aed) +
+  geom_violin(
+    mapping = aes(
+      x = identical_matches_percent >= 95,
+      y = aed_score,
+      fill = identical_matches_percent >= 95
+    ),
+    show.legend = F
+  ) +
+  labs(title = "AED score for hits with >= 95% of identical matches", x = ">=95% of Identical matches", y = "AED score") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_for_95_matches.png")
