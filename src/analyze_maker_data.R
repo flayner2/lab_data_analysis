@@ -38,7 +38,7 @@ summary(blast_results)
 proteins_id_to_aed['blast_hit'] <- FALSE
 
 # Add BLAST information to the proteins data frame
-proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name),]$blast_hit <-
+proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name), ]$blast_hit <-
   TRUE
 
 # Add AED information to the blast data frame
@@ -77,19 +77,25 @@ pie_data <- table(proteins_id_to_aed$blast_hit)
 pie_labels <-
   paste0(pie_data, " = ", round(100 * pie_data / sum(pie_data), 2), "%")
 pie_colors <- brewer.pal(length(pie_data), "Set1")
-pie(pie_data,
-    labels = pie_labels,
-    col = pie_colors,
-    border = pie_colors)
+pie(
+  pie_data,
+  labels = pie_labels,
+  col = pie_colors,
+  border = pie_colors,
+  cex = 1.5
+)
 title(
   main = list(
     "Proportion of MAKER2 predicted proteins with at least one BLAST hit against the Apis mellifera non-redundant proteome",
     cex = 1.5
   )
 )
-legend("topright",
-       legend = c("No hits", "Any hits"),
-       fill = pie_colors)
+legend(
+  "topright",
+  legend = c("No hits", "Any hits"),
+  fill = pie_colors,
+  cex = 1.6
+)
 dev.off()
 
 # Distribution of the number of alignments per protein
@@ -107,7 +113,7 @@ proteins_with_hits <-
   proteins_id_to_aed %>% filter(blast_hit == T) %>% select(-blast_hit)
 proteins_with_hits["only_one"] <- F
 one_hit <- hits_frequency %>% filter(Freq == 1)
-proteins_with_hits[which(proteins_with_hits$protein_name %in% one_hit$Var1),]$only_one <-
+proteins_with_hits[which(proteins_with_hits$protein_name %in% one_hit$Var1), ]$only_one <-
   TRUE
 png(
   "~/Documents/LAB/eusociality/one_vs_multi_hits.png",
@@ -135,7 +141,7 @@ legend(
   "topright",
   legend = c("Multiple hits", "One hit"),
   fill = pie_colors,
-  cex = 1.2
+  cex = 1.6
 )
 dev.off()
 
@@ -150,10 +156,16 @@ ggplot(data = proteins_with_hits) +
 ggsave("~/Documents/LAB/eusociality/aed_by_one_hit.png")
 
 # AED score for sequences with 100% of identical matches
-blast_results %>% filter(identical_matches_percent == 100) %>%  ggplot() +
-  geom_boxplot(mapping = aes(x = aed_score), fill = "#FC8D62") +
-  coord_flip() +
-  labs(title = "Boxplot of the AED score for hits with 100% of identical matches", x = "AED score") +
+ggplot(blast_results) +
+  geom_violin(
+    mapping = aes(
+      x = identical_matches_percent == 100,
+      y = aed_score,
+      fill = identical_matches_percent == 100
+    ),
+    show.legend = F
+  ) +
+  labs(title = "Boxplot of the AED score for hits with 100% of identical matches", x = "100% of Identical matches", y = "AED score") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
 
@@ -169,7 +181,7 @@ ggplot(data = blast_results) +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_vs_length_vs_matches.png")
 
-# AED score for sequences with 100% of identical matches
+# AED score by whether the sequence has or not a BLAST hit
 ggplot(proteins_id_to_aed) +
   geom_violin(
     mapping = aes(x = blast_hit, y = aed_score, fill = blast_hit),
@@ -178,3 +190,19 @@ ggplot(proteins_id_to_aed) +
   labs(title = "AED score distribution for sequences with and without a BLAST hit", x = "Have BLAST hits", y = "AED score") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
+
+# AED score by number of hits
+proteins_id_to_aed <-
+  proteins_id_to_aed %>% left_join(hits_frequency, by = c("protein_name" = "Var1"))
+colnames(proteins_id_to_aed)[colnames(proteins_id_to_aed) == "Freq"] <-
+  "blast_hits_number"
+proteins_id_to_aed$blast_hits_number[is.na(proteins_id_to_aed$blast_hits_number)] <-
+  0
+ggplot(data = proteins_id_to_aed) +
+  geom_jitter(mapping = aes(x = aed_score, y = blast_hits_number),
+              color = "#FC8D62") +
+  labs(title = "AED score by number of BLAST hits",
+       x = "AED score",
+       y = "Number of BLAST hits") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_by_number_of_hits.png")
