@@ -38,7 +38,7 @@ summary(blast_results)
 proteins_id_to_aed['blast_hit'] <- FALSE
 
 # Add BLAST information to the proteins data frame
-proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name), ]$blast_hit <-
+proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name),]$blast_hit <-
   TRUE
 
 # Add AED information to the blast data frame
@@ -68,7 +68,11 @@ ggplot(data = blast_results) +
 ggsave("~/Documents/LAB/eusociality/identical_matches.png")
 
 # Proportion of proteins that had a BLAST hit
-png("~/Documents/LAB/eusociality/blast_hits_pie.png", width = 1360, height = 1229)
+png(
+  "~/Documents/LAB/eusociality/blast_hits_pie.png",
+  width = 1360,
+  height = 1229
+)
 pie_data <- table(proteins_id_to_aed$blast_hit)
 pie_labels <-
   paste0(pie_data, " = ", round(100 * pie_data / sum(pie_data), 2), "%")
@@ -79,7 +83,7 @@ pie(pie_data,
     border = pie_colors)
 title(
   main = list(
-    "Proportion of MAKER2 predicted proteins with a BLAST hit against the Apis mellifera non-redundant proteome",
+    "Proportion of MAKER2 predicted proteins with at least one BLAST hit against the Apis mellifera non-redundant proteome",
     cex = 1.5
   )
 )
@@ -99,36 +103,78 @@ ggplot(data = hits_frequency) +
 ggsave("~/Documents/LAB/eusociality/hit_numbers.png")
 
 # Proportion of proteins that had only one BLAST hit
-proteins_with_hits <- proteins_id_to_aed %>% filter(blast_hit == T) %>% select(-blast_hit)
+proteins_with_hits <-
+  proteins_id_to_aed %>% filter(blast_hit == T) %>% select(-blast_hit)
 proteins_with_hits["only_one"] <- F
 one_hit <- hits_frequency %>% filter(Freq == 1)
-proteins_with_hits[which(proteins_with_hits$protein_name %in% one_hit$Var1), ]$only_one <-
+proteins_with_hits[which(proteins_with_hits$protein_name %in% one_hit$Var1),]$only_one <-
   TRUE
-png("~/Documents/LAB/eusociality/one_vs_multi_hits.png", width = 1360, height = 1229)
+png(
+  "~/Documents/LAB/eusociality/one_vs_multi_hits.png",
+  width = 1360,
+  height = 1229
+)
 pie_data <- table(proteins_with_hits$only_one)
 pie_labels <-
   paste0(pie_data, " = ", round(100 * pie_data / sum(pie_data), 2), "%")
 pie_colors <- c("#FC8D62", "#66C2A5")
-pie(pie_data,
-    labels = pie_labels,
-    col = pie_colors,
-    border = pie_colors,
-    cex = 1.5,)
+pie(
+  pie_data,
+  labels = pie_labels,
+  col = pie_colors,
+  border = pie_colors,
+  cex = 1.5,
+)
 title(
   main = list(
     "Proportion of MAKER2 predicted proteins with only one BLAST hit vs multiple BLAST hits",
     cex = 1.5
   )
 )
-legend("topright",
-       legend = c("Multiple hits", "One hit"),
-       fill = pie_colors,
-       cex = 1.2)
+legend(
+  "topright",
+  legend = c("Multiple hits", "One hit"),
+  fill = pie_colors,
+  cex = 1.2
+)
 dev.off()
 
 # Distribution of AED by one or more hits
 ggplot(data = proteins_with_hits) +
-  geom_violin(mapping = aes(x = only_one, y = aed_score, fill = only_one), show.legend = F) +
+  geom_violin(
+    mapping = aes(x = only_one, y = aed_score, fill = only_one),
+    show.legend = F
+  ) +
   labs(title = "AED score distribution by one or many BLAST hits", x = "Only one hit", y = "AED score") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("~/Documents/LAB/eusociality/aed_by_one_hit.png")
+
+# AED score for sequences with 100% of identical matches
+blast_results %>% filter(identical_matches_percent == 100) %>%  ggplot() +
+  geom_boxplot(mapping = aes(x = aed_score), fill = "#FC8D62") +
+  coord_flip() +
+  labs(title = "Boxplot of the AED score for hits with 100% of identical matches", x = "AED score") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
+
+# AED score vs alignment length
+ggplot(data = blast_results) +
+  geom_jitter(mapping = aes(x = aed_score, y = alignment_length, color = identical_matches_percent)) +
+  labs(
+    title = "AED score by alignment length by percentage of identical matches",
+    x = "AED score",
+    y = "Alignment length",
+    color = "Identical matches (%)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_vs_length_vs_matches.png")
+
+# AED score for sequences with 100% of identical matches
+ggplot(proteins_id_to_aed) +
+  geom_violin(
+    mapping = aes(x = blast_hit, y = aed_score, fill = blast_hit),
+    show.legend = F
+  ) +
+  labs(title = "AED score distribution for sequences with and without a BLAST hit", x = "Have BLAST hits", y = "AED score") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_for_100_matches.png")
