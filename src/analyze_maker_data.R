@@ -38,11 +38,13 @@ summary(blast_results)
 proteins_id_to_aed['blast_hit'] <- FALSE
 
 # Add BLAST information to the proteins data frame
-proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name),]$blast_hit <- TRUE
+proteins_id_to_aed[which(proteins_id_to_aed$protein_name %in% blast_results$query_name), ]$blast_hit <-
+  TRUE
 
 # Add AED information to the blast data frame
-blast_results <- blast_results %>% inner_join(y = proteins_id_to_aed, by = c("query_name" = "protein_name"))
-blast_results <- blast_results %>% select(- blast_hit)
+blast_results <-
+  blast_results %>% inner_join(y = proteins_id_to_aed, by = c("query_name" = "protein_name"))
+blast_results <- blast_results %>% select(-blast_hit)
 
 # Distribution of alignment lengths
 ggplot(data = blast_results) +
@@ -66,16 +68,67 @@ ggplot(data = blast_results) +
 ggsave("~/Documents/LAB/eusociality/identical_matches.png")
 
 # Proportion of proteins that had a BLAST hit
-png("~/Documents/LAB/eusociality/blast_hits_pie.png")
+png("~/Documents/LAB/eusociality/blast_hits_pie.png", width = 1360, height = 1229)
 pie_data <- table(proteins_id_to_aed$blast_hit)
-pie_labels <- paste0(pie_data, " = ", round(100 * pie_data/sum(pie_data), 2), "%")
+pie_labels <-
+  paste0(pie_data, " = ", round(100 * pie_data / sum(pie_data), 2), "%")
 pie_colors <- brewer.pal(length(pie_data), "Set1")
-pie(pie_data, labels = pie_labels, col = pie_colors, border = pie_colors)
-title(main = list("Proportion of MAKER2 predicted proteins with a BLAST hit against the Apis mellifera non-redundant proteome", cex = 1.5))
-legend("topright", legend = c("No hits", "Any hits"), fill = pie_colors)
+pie(pie_data,
+    labels = pie_labels,
+    col = pie_colors,
+    border = pie_colors)
+title(
+  main = list(
+    "Proportion of MAKER2 predicted proteins with a BLAST hit against the Apis mellifera non-redundant proteome",
+    cex = 1.5
+  )
+)
+legend("topright",
+       legend = c("No hits", "Any hits"),
+       fill = pie_colors)
 dev.off()
 
 # Distribution of the number of alignments per protein
-test <- as.data.frame(table(blast_results$query_name)) %>% filter(Freq > 0)
-blast_results %>%  ggplot() +
-  geom_histogram(mapping = aes(x = query_name), stat = "count")
+hits_frequency <-
+  as.data.frame(table(blast_results$query_name)) %>% filter(Freq > 0)
+ggplot(data = hits_frequency) +
+  geom_histogram(mapping = aes(x = Freq, y = ..density..),
+                 bins = length(unique(hits_frequency$Freq)))  +
+  labs(title = "Density of the number of BLAST hits per sequence", x = "Number of hits", y = "Density") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/hit_numbers.png")
+
+# Proportion of proteins that had only one BLAST hit
+proteins_with_hits <- proteins_id_to_aed %>% filter(blast_hit == T) %>% select(-blast_hit)
+proteins_with_hits["only_one"] <- F
+one_hit <- hits_frequency %>% filter(Freq == 1)
+proteins_with_hits[which(proteins_with_hits$protein_name %in% one_hit$Var1), ]$only_one <-
+  TRUE
+png("~/Documents/LAB/eusociality/one_vs_multi_hits.png", width = 1360, height = 1229)
+pie_data <- table(proteins_with_hits$only_one)
+pie_labels <-
+  paste0(pie_data, " = ", round(100 * pie_data / sum(pie_data), 2), "%")
+pie_colors <- c("#FC8D62", "#66C2A5")
+pie(pie_data,
+    labels = pie_labels,
+    col = pie_colors,
+    border = pie_colors,
+    cex = 1.5,)
+title(
+  main = list(
+    "Proportion of MAKER2 predicted proteins with only one BLAST hit vs multiple BLAST hits",
+    cex = 1.5
+  )
+)
+legend("topright",
+       legend = c("Multiple hits", "One hit"),
+       fill = pie_colors,
+       cex = 1.2)
+dev.off()
+
+# Distribution of AED by one or more hits
+ggplot(data = proteins_with_hits) +
+  geom_violin(mapping = aes(x = only_one, y = aed_score, fill = only_one), show.legend = F) +
+  labs(title = "AED score distribution by one or many BLAST hits", x = "Only one hit", y = "AED score") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("~/Documents/LAB/eusociality/aed_by_one_hit.png")
